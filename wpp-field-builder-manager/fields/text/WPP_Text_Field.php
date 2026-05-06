@@ -120,59 +120,20 @@ if (!class_exists('WPP_Text_Field') && class_exists('WPP_Form_Field')) :
 		}
 
 		/**
-		 * Overrides render_wrapper_start()
+		 * Overrides render_wrapper_start() for hidden field support
 		 *
-		 * @override
+		 * @since 1.0.0
+		 * @return void
 		 */
 		public function render_wrapper_start() {
 			$name = esc_attr($this->get_name());
 
-			// Не выводим обёртку для hidden
+			// Skip wrapper for hidden fields
 			if (!empty($this->args['element_type']) && $this->args['element_type'] === 'hidden') {
 				return;
 			}
 
-			$classes = array_map('esc_attr', $this->args['classes']);
-			$width = strtolower(trim($this->args['width']));
-
-			// Ширина через Bootstrap
-			$width_class = match ( $width ) {
-				'1/12' => 'col-md-1',
-				'1' => 'col-md-1',
-				'2' => 'col-md-2',
-				'3' => 'col-md-3',
-				'4' => 'col-md-4',
-				'5' => 'col-md-5',
-				'6' => 'col-md-6',
-				'7' => 'col-md-7',
-				'8' => 'col-md-8',
-				'9' => 'col-md-9',
-				'10' => 'col-md-10',
-				'11' => 'col-md-11',
-				'1/6' => 'col-md-2',
-				'2/12' => 'col-md-2',
-				'1/2' => 'col-md-6',
-				'1/3' => 'col-md-4',
-				'2/3' => 'col-md-8',
-				'1/4' => 'col-md-3',
-				default => 'col-12',
-			};
-
-			$classes[] = $width_class;
-
-			// Условная логика
-			$condition_data = '';
-			if (!empty($this->args['conditional']) && is_array($this->args['conditional'])) {
-				$condition_data = htmlspecialchars(json_encode($this->args['conditional']), ENT_QUOTES, 'UTF-8');
-			}
-
-			$type_class = 'wpp-' . strtolower(preg_replace('/^WPP_|_Field$/', '', get_class($this)));
-
-			?>
-        <div class="wpp-field wpp-<?php echo $type_class; ?> <?php echo esc_attr(implode(' ', $classes)); ?>"
-             data-name="<?php echo $name; ?>"
-		     <?php if ($condition_data): ?>data-condition='<?php echo $condition_data; ?>'<?php endif; ?>>
-			<?php
+			parent::render_wrapper_start();
 		}
 	}
 endif;

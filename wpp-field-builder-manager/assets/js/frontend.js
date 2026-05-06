@@ -2,20 +2,18 @@
     'use strict';
 
     $(document).ready(function () {
-        //console.log('WPP Field Builder: Frontend script loaded.');
-
         // Инициализация условной логики при загрузке страницы
         handleConditionalFields();
 
         // Обновление видимости полей при изменении других полей
-        $(document).on('input', '.wpp-field input, .wpp-field select', function () {
+        $(document).on('input change', '.wpp-field input, .wpp-field select, .wpp-field textarea', function () {
             handleConditionalFields();
         });
 
         /**
-         * Получаем значение поля по имени
+         * Получить значение поля по имени
          *
-         * @param {string} fieldName - имя поля
+         * @param {string} fieldName - Имя поля
          * @returns {string}
          */
         function getFieldValue(fieldName) {
@@ -23,14 +21,14 @@
 
             if ($input.length === 0) return '';
 
-            // Если поле имеет атрибут disabled → игнорируем его значение
+            // Игнорировать отключённые поля
             if ($input.prop('disabled')) {
                 return '';
             }
 
             const value = $input.val();
 
-            // Для money-полей очищаем от лишних символов
+            // Очистить денежные поля от лишних символов
             if ($input.closest('.wpp-field').find('[data-type="money"]').length > 0) {
                 return value.replace(/[^0-9.]/g, '');
             }
@@ -39,18 +37,17 @@
         }
 
         /**
-         * Обработчик условного отображения полей
+         * Обработка условного отображения полей
          */
         function handleConditionalFields() {
             const allFields = $('.wpp-field');
 
-            // Проходим по каждому полю и проверяем условия
             allFields.each(function () {
                 const field = $(this);
                 const conditionData = field.attr('data-condition');
                 const compareType = field.attr('data-compare') || '=';
 
-                if (!conditionData) return; // Пропускаем, если нет условия
+                if (!conditionData) return;
 
                 try {
                     const conditions = JSON.parse(conditionData);
@@ -59,45 +56,29 @@
                     $.each(conditions, function (key, expectedValues) {
                         const fieldValue = getFieldValue(key);
 
-                        // Если expectedValues — массив
                         if (Array.isArray(expectedValues)) {
                             const matches = expectedValues.includes(fieldValue);
-                            if (compareType === '!=') {
-                                show = !matches;
-                            } else {
-                                show = matches;
-                            }
+                            show = compareType === '!=' ? !matches : matches;
                         } else {
-                            // Одиночное значение
                             const matches = String(fieldValue) === String(expectedValues);
-                            if (compareType === '!=') {
-                                show = !matches;
-                            } else {
-                                show = matches;
-                            }
+                            show = compareType === '!=' ? !matches : matches;
                         }
 
-                        // Останавливаем цикл, если уже определено, что не показывать
                         if (!show) return false;
                     });
 
-                    // Управляем отображением и состоянием поля
-                    if (!show) {
-                        field.hide();
-                        field.find('input, select').prop('disabled', true); // Блокируем ввод
-                    } else {
-                        field.show();
-                        field.find('input, select').prop('disabled', false); // Разрешаем ввод
-                    }
+                    // Переключить видимость поля и состояние disabled
+                    field.toggle(show);
+                    field.find('input, select, textarea').prop('disabled', !show);
 
                 } catch (e) {
-                    console.error('Ошибка условия:', conditionData);
+                    console.error('WPP Field Builder: Ошибка условной логики:', conditionData, e);
                 }
             });
         }
 
         /**
-         * Пример кастомной валидации формы
+         * Кастомная валидация формы
          */
         $('form.wpp-custom-form').on('submit', function (e) {
             let isValid = true;
@@ -117,7 +98,6 @@
                 alert('Пожалуйста, заполните все обязательные поля.');
             }
         });
-
     });
 
 })(jQuery);
