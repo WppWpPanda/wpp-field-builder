@@ -1,7 +1,7 @@
 ```
 # Dependencies
-node_modules/
 vendor/
+node_modules/
 
 # Build artifacts
 dist/
@@ -25,11 +25,21 @@ build/
 *.swo
 *~
 
-# OS
+# OS generated files
 .DS_Store
 Thumbs.db
 
 # WordPress specific
 wp-content/cache/
 *.sql
+*.sql.gz
+
+# Backup files
+*~
+*.bak
+*.backup
+
+# IDE and editor files
+*.swp
+*.swo
 ```

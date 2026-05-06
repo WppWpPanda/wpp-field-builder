@@ -40,6 +40,23 @@ class WPP_Form_Builder_Admin {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'wp_ajax_wpp_export_form_config', array( $this, 'ajax_export_form_config' ) );
+		
+		// Добавление ссылки на настройки в списке плагинов
+		add_filter( 'plugin_action_links_' . WPP_FIELD_BUILDER_BASENAME, array( $this, 'add_plugin_action_links' ) );
+	}
+
+	/**
+	 * Добавление ссылки на настройки в список плагинов
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array $links Существующие ссылки.
+	 * @return array Обновленные ссылки.
+	 */
+	public function add_plugin_action_links( $links ) {
+		$settings_link = '<a href="' . admin_url( 'admin.php?page=' . $this->page_slug ) . '">' . __( 'Конструктор форм', 'wpp-field-builder-manager' ) . '</a>';
+		array_unshift( $links, $settings_link );
+		return $links;
 	}
 
 	/**
@@ -142,10 +159,20 @@ class WPP_Form_Builder_Admin {
 	 * @since 1.0.0
 	 */
 	public function add_admin_menu() {
+		add_menu_page(
+			__( 'Конструктор форм WPP', 'wpp-field-builder-manager' ),
+			__( 'WPP Field Builder', 'wpp-field-builder-manager' ),
+			'manage_options',
+			$this->page_slug,
+			array( $this, 'render_admin_page' ),
+			'dashicons-editor-table',
+			30
+		);
+		
 		add_submenu_page(
-			'wpp-field-builder',
-			'Конструктор форм',
-			'Конструктор форм',
+			$this->page_slug,
+			__( 'Конструктор форм', 'wpp-field-builder-manager' ),
+			__( 'Конструктор форм', 'wpp-field-builder-manager' ),
 			'manage_options',
 			$this->page_slug,
 			array( $this, 'render_admin_page' )
@@ -160,7 +187,7 @@ class WPP_Form_Builder_Admin {
 	 * @param string $hook Хук текущей страницы.
 	 */
 	public function enqueue_assets( $hook ) {
-		if ( 'toplevel_page_wpp-field-builder_page_' . $this->page_slug !== $hook ) {
+		if ( 'toplevel_page_' . $this->page_slug !== $hook ) {
 			return;
 		}
 
@@ -171,10 +198,13 @@ class WPP_Form_Builder_Admin {
 			WPP_FIELD_BUILDER_VERSION
 		);
 
+		// Подключаем jQuery UI CSS для drag-and-drop
+		wp_enqueue_style( 'jquery-ui-sortable' );
+
 		wp_enqueue_script(
 			'wpp-form-builder-admin',
 			WPP_FIELD_BUILDER_URL . 'admin/js/form-builder-admin.js',
-			array( 'jquery', 'jquery-ui-sortable', 'wp-util' ),
+			array( 'jquery', 'jquery-ui-core', 'jquery-ui-draggable', 'jquery-ui-droppable', 'jquery-ui-sortable' ),
 			WPP_FIELD_BUILDER_VERSION,
 			true
 		);
@@ -187,29 +217,29 @@ class WPP_Form_Builder_Admin {
 				'nonce'           => wp_create_nonce( 'wpp_form_builder_nonce' ),
 				'availableFields' => $this->available_fields,
 				'i18n'            => array(
-					'dragToAdd'          => 'Перетащите поле в форму',
-					'addField'           => 'Добавить поле',
-					'removeField'        => 'Удалить поле',
-					'fieldSettings'      => 'Настройки поля',
-					'saveConfig'         => 'Сохранить конфигурацию',
-					'copyConfig'         => 'Копировать конфигурацию',
-					'configCopied'       => 'Конфигурация скопирована в буфер обмена!',
-					'confirmDelete'      => 'Вы уверены, что хотите удалить это поле?',
-					'fieldName'          => 'Название поля',
-					'fieldLabel'         => 'Метка',
-					'fieldPlaceholder'   => 'Подсказка',
-					'fieldRequired'      => 'Обязательное',
-					'fieldWidth'         => 'Ширина',
-					'conditionalLogic'   => 'Условная логика',
-					'options'            => 'Опции',
-					'addOption'          => 'Добавить опцию',
-					'showIf'             => 'Показывать если',
-					'equals'             => 'равно',
-					'notEquals'          => 'не равно',
-					'contains'           => 'содержит',
-					'emptyConfig'        => 'Конфигурация пуста',
-					'exportSuccess'      => 'Конфигурация экспортирована успешно',
-					'exportError'        => 'Ошибка при экспорте конфигурации',
+					'dragToAdd'          => __( 'Перетащите поле в форму', 'wpp-field-builder-manager' ),
+					'addField'           => __( 'Добавить поле', 'wpp-field-builder-manager' ),
+					'removeField'        => __( 'Удалить поле', 'wpp-field-builder-manager' ),
+					'fieldSettings'      => __( 'Настройки поля', 'wpp-field-builder-manager' ),
+					'saveConfig'         => __( 'Сохранить конфигурацию', 'wpp-field-builder-manager' ),
+					'copyConfig'         => __( 'Копировать конфигурацию', 'wpp-field-builder-manager' ),
+					'configCopied'       => __( 'Конфигурация скопирована в буфер обмена!', 'wpp-field-builder-manager' ),
+					'confirmDelete'      => __( 'Вы уверены, что хотите удалить это поле?', 'wpp-field-builder-manager' ),
+					'fieldName'          => __( 'Название поля', 'wpp-field-builder-manager' ),
+					'fieldLabel'         => __( 'Метка', 'wpp-field-builder-manager' ),
+					'fieldPlaceholder'   => __( 'Подсказка', 'wpp-field-builder-manager' ),
+					'fieldRequired'      => __( 'Обязательное', 'wpp-field-builder-manager' ),
+					'fieldWidth'         => __( 'Ширина', 'wpp-field-builder-manager' ),
+					'conditionalLogic'   => __( 'Условная логика', 'wpp-field-builder-manager' ),
+					'options'            => __( 'Опции', 'wpp-field-builder-manager' ),
+					'addOption'          => __( 'Добавить опцию', 'wpp-field-builder-manager' ),
+					'showIf'             => __( 'Показывать если', 'wpp-field-builder-manager' ),
+					'equals'             => __( 'равно', 'wpp-field-builder-manager' ),
+					'notEquals'          => __( 'не равно', 'wpp-field-builder-manager' ),
+					'contains'           => __( 'содержит', 'wpp-field-builder-manager' ),
+					'emptyConfig'        => __( 'Конфигурация пуста', 'wpp-field-builder-manager' ),
+					'exportSuccess'      => __( 'Конфигурация экспортирована успешно', 'wpp-field-builder-manager' ),
+					'exportError'        => __( 'Ошибка при экспорте конфигурации', 'wpp-field-builder-manager' ),
 				),
 			)
 		);
