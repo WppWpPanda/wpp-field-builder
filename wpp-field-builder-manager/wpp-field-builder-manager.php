@@ -1,10 +1,10 @@
 <?php
 /**
- * Плагин: WPP Field Builder Manager
- * Описание: Универсальный менеджер форм для WordPress. Поддерживает кастомные поля, условную логику, валидацию и адаптивный дизайн на Bootstrap.
- * Версия: 1.0.0
- * Автор: Your Name
- * Текстовое домен: wpp-field-builder
+ * Plugin Name: WPP Field Builder Manager
+ * Description: Универсальный менеджер форм для WordPress. Поддерживает кастомные поля, условную логику, валидацию и адаптивный дизайн на Bootstrap.
+ * Version: 1.0.0
+ * Author: Your Name
+ * Text Domain: wpp-field-builder
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -24,9 +24,29 @@ require_once WPP_FIELD_BUILDER_PATH . 'includes/class-wpp-field-loader.php';
 require_once WPP_FIELD_BUILDER_PATH . 'includes/class-wpp-assets.php';
 
 /**
+ * Загрузка административной части (только для админки)
+ */
+if ( is_admin() ) {
+	require_once WPP_FIELD_BUILDER_PATH . 'admin/class-wpp-form-builder-admin.php';
+}
+
+/**
  * Инициализация компонентов плагина
  */
 add_action( 'plugins_loaded', 'wpp_field_builder_init' );
+
+/**
+ * Добавляет ссылку на настройки в список плагинов.
+ *
+ * @param array $links Существующие ссылки плагина.
+ * @return array Обновлённый массив ссылок.
+ */
+function wpp_field_builder_add_settings_link( $links ) {
+	$settings_link = '<a href="' . admin_url( 'admin.php?page=wpp-form-builder' ) . '">Конструктор форм</a>';
+	array_unshift( $links, $settings_link );
+	return $links;
+}
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wpp_field_builder_add_settings_link' );
 
 /**
  * Инициализация WPP Field Builder
@@ -40,6 +60,11 @@ function wpp_field_builder_init() {
 	
 	// Загрузка всех полей
 	WPP_Field_Loader::init();
+	
+	// Инициализация административной панели (если класс существует)
+	if ( is_admin() && class_exists( 'WPP_Form_Builder_Admin' ) ) {
+		new WPP_Form_Builder_Admin();
+	}
 	
 	// Загрузка тестовой формы, если существует
 	$test_form_path = WPP_FIELD_BUILDER_PATH . 'test/test-form.php';
