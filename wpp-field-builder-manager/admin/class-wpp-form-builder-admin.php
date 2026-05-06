@@ -198,10 +198,13 @@ class WPP_Form_Builder_Admin {
 			WPP_FIELD_BUILDER_VERSION
 		);
 
+		// Подключаем jQuery UI CSS для drag-and-drop
+		wp_enqueue_style( 'jquery-ui-sortable' );
+
 		wp_enqueue_script(
 			'wpp-form-builder-admin',
 			WPP_FIELD_BUILDER_URL . 'admin/js/form-builder-admin.js',
-			array( 'jquery', 'jquery-ui-sortable', 'wp-util' ),
+			array( 'jquery', 'jquery-ui-core', 'jquery-ui-draggable', 'jquery-ui-droppable', 'jquery-ui-sortable' ),
 			WPP_FIELD_BUILDER_VERSION,
 			true
 		);
