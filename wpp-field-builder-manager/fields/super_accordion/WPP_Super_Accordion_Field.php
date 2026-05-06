@@ -43,10 +43,17 @@ if (!class_exists('WPP_Super_Accordion_Field') && class_exists('WPP_Form_Field')
 			);
 		}
 
-		private function get_form_data() {
-			$step = WPP_Loan_Session_Handler::get_step_data(4); // или другой шаг
-			return $step['formData'] ?? [];
-		}
+	/**
+	 * Получить данные формы для аккордеона
+	 *
+	 * @since 1.0.0
+	 * @return array Данные формы
+	 */
+	private function get_form_data() {
+		// Используем фильтр для получения данных формы
+		// Пример: add_filter( 'wpp_super_accordion_form_data', function() { return $_POST['form_data'] ?? []; } );
+		return apply_filters( 'wpp_super_accordion_form_data', [], $this );
+	}
 
 		/**
 		 * Рендерит аккордеон с внутренними полями
@@ -61,8 +68,8 @@ if (!class_exists('WPP_Super_Accordion_Field') && class_exists('WPP_Form_Field')
 			$fields = $this->args['fields'] ?? [];
 			$is_open = !empty($this->args['open']);
 
-			// Получаем данные формы (из сессии)
-			$form_data = []; // должен возвращать formData из шага
+			// Получаем данные формы через фильтр
+			$form_data = $this->get_form_data();
 
 			// Парсим заголовок
 			$header_text = '';

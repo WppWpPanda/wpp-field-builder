@@ -131,22 +131,30 @@ if (!class_exists('WPP_Percent_Money_Field') && class_exists('WPP_Form_Field')) 
 		/**
 		 * Получение значения поля
 		 *
+		 * @since 1.0.0
 		 * @param string $type Тип значения ('money' или 'percent')
-		 * @return mixed
+		 * @return mixed Значение поля
 		 */
-		public function get_value($type = 'money') {
-			$value = null;
+		public function get_value( $type = 'money' ) {
+			// Используем фильтр для получения данных вместо жесткой зависимости
+			$value = apply_filters(
+				'wpp_percent_money_field_value',
+				null,
+				$this->args['name'],
+				$type,
+				$this
+			);
 
-			switch ($type) {
-				case 'money':
-					$value = WPP_Loan_Session_Handler::get_field_value(1, $this->args['name'] . '[money]');
-					break;
-				case 'percent':
-					$value = WPP_Loan_Session_Handler::get_field_value(1, $this->args['name'] . '[percent]');
-					break;
+			if ( null !== $value ) {
+				return $value;
 			}
 
-			return $value !== null ? $value : '';
+			// Возвращаем значение по умолчанию из аргументов
+			if ( ! empty( $this->args['default'] ) && is_array( $this->args['default'] ) ) {
+				return $this->args['default'][ $type ] ?? '';
+			}
+
+			return '';
 		}
 	}
 endif;

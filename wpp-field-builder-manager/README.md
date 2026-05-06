@@ -10,6 +10,14 @@
 - **Адаптивный дизайн**: Интеграция с Bootstrap 5 для мобильных форм
 - **Поддержка админки и фронтенда**: Работает как в админ-панели WordPress, так и на публичной части сайта
 - **Поддержка Select2**: Улучшенные выпадающие списки с поиском
+- **Гибкая настройка Bootstrap**: Возможность использовать локальные файлы или CDN
+
+## Требования
+
+- WordPress 5.0 или выше
+- PHP 7.4 или выше
+- jQuery (входит в состав WordPress)
+- Bootstrap 5.3 (загружается автоматически через CDN, можно отключить)
 
 ## Установка
 
@@ -33,10 +41,39 @@ $text_field = new WPP_Text_Field([
 $text_field->render();
 ```
 
-### Условная логика
+### Выпадающий список
 
 ```php
-// Поле, которое отображается только когда другое поле имеет определённое значение
+$select_field = new WPP_Select_Field([
+    'name' => 'country',
+    'label' => 'Страна',
+    'options' => [
+        'ru' => 'Россия',
+        'by' => 'Беларусь',
+        'kz' => 'Казахстан'
+    ],
+    'default' => 'ru'
+]);
+$select_field->render();
+```
+
+### Чекбокс
+
+```php
+$checkbox_field = new WPP_Checkbox_Field([
+    'name' => 'agree_terms',
+    'label' => 'Я согласен с условиями обработки данных',
+    'required' => true
+]);
+$checkbox_field->render();
+```
+
+### Условная логика
+
+Поле отображается только когда другое поле имеет определённое значение:
+
+```php
+// Поле появляется только если выбрано "employed" в поле employment_status
 $conditional_field = new WPP_Text_Field([
     'name' => 'company_name',
     'label' => 'Название компании',
@@ -47,19 +84,58 @@ $conditional_field = new WPP_Text_Field([
 $conditional_field->render();
 ```
 
-### Выпадающий список с Select2
+### Группа полей (Fields Block)
 
 ```php
-$select_field = new WPP_Select_Field([
-    'name' => 'state',
-    'label' => 'Область',
-    'options' => [
-        'CA' => 'Калининградская',
-        'NY' => 'Московская'
-    ],
-    'select2' => true
+$block_field = new WPP_Fields_Block_Field([
+    'name' => 'contact_info',
+    'label' => 'Контактная информация',
+    'fields' => [
+        'email' => [
+            'type' => 'text',
+            'label' => 'Email',
+            'placeholder' => 'example@mail.ru'
+        ],
+        'phone' => [
+            'type' => 'text',
+            'label' => 'Телефон',
+            'placeholder' => '+7 (999) 000-00-00'
+        ]
+    ]
 ]);
-$select_field->render();
+$block_field->render();
+```
+
+### Аккордеон с полями
+
+```php
+$accordion_field = new WPP_Accordion_Field([
+    'name' => 'details',
+    'title' => 'Дополнительная информация',
+    'fields' => [
+        'comments' => [
+            'type' => 'textarea',
+            'label' => 'Комментарий',
+            'placeholder' => 'Ваш комментарий...'
+        ]
+    ]
+]);
+$accordion_field->render();
+```
+
+### Поле с процентами и суммой
+
+```php
+$percent_money_field = new WPP_Percent_Money_Field([
+    'name' => 'payment',
+    'label' => 'Сумма платежа',
+    'base_amount' => 10000,
+    'default' => [
+        'money' => 5000,
+        'percent' => 50
+    ]
+]);
+$percent_money_field->render();
 ```
 
 ## Доступные типы полей
@@ -74,17 +150,21 @@ $select_field->render();
 | Number | `WPP_Number_Field` | Числовое поле |
 | Datepicker | `WPP_Datepicker_Field` | Выбор даты |
 | Accordion | `WPP_Accordion_Field` | Сворачиваемые секции |
+| Super Accordion | `WPP_Super_Accordion_Field` | Аккордеон с динамическим заголовком |
 | Repeater | `WPP_Repeater_Field` | Повторяемые группы полей |
 | Address | `WPP_Address_Field` | Группа полей адреса |
 | Button | `WPP_Button_Field` | Кнопки действий |
 | Button Group | `WPP_Button_Group_Field` | Группа кнопок для выбора |
 | Documents Upload | `WPP_Documents_Upload_Field` | Загрузка файлов |
+| Content | `WPP_Content_Field` | Текстовый контент/разделитель |
+| Fields Block | `WPP_Fields_Block_Field` | Блок для группировки полей |
+| Percent Money | `WPP_Percent_Money_Field` | Поле с двумя значениями: сумма и процент |
 
 ## Аргументы полей
 
 | Аргумент | Тип | По умолчанию | Описание |
 |----------|------|---------|-------------|
-| `name` | string | '' | Имя поля (обязательно) |
+| `name` | string | '' | **Обязательно.** Имя поля (name="...") |
 | `label` | string | '' | Подпись поля |
 | `description` | string | '' | Текст подсказки под полем |
 | `default` | mixed | '' | Значение по умолчанию |
@@ -94,26 +174,116 @@ $select_field->render();
 | `required` | bool | false | Сделать поле обязательным |
 | `conditional` | array | [] | Правила условного отображения |
 | `validation` | callable | null | Callback для пользовательской валидации |
+| `compare` | string | '=' | Оператор сравнения для условной логики (=, !=, >, < и т.д.) |
 
 ## Опции ширины
 
-- `full` или `12` - Полная ширина (col-12)
-- `1/2` или `6` - Половина ширины (col-md-6)
-- `1/3` или `4` - Одна треть (col-md-4)
-- `1/4` или `3` - Одна четверть (col-md-3)
-- `2/3` или `8` - Две трети (col-md-8)
-- И другие: 1/12, 1/6, 5, 7, 9, 10, 11
+| Значение | Класс Bootstrap | Описание |
+|----------|----------------|----------|
+| `full` или `12` | col-12 | Полная ширина |
+| `1/2` или `6` | col-md-6 | Половина ширины |
+| `1/3` или `4` | col-md-4 | Одна треть |
+| `1/4` или `3` | col-md-3 | Одна четверть |
+| `2/3` или `8` | col-md-8 | Две трети |
+| `1/6` или `2` | col-md-2 | Одна шестая |
+| `1/12` или `1` | col-md-1 | Одна двенадцатая |
+
+Также поддерживаются числовые значения: 5, 7, 9, 10, 11.
 
 ## Хуки и фильтры
 
 ### `wpp_form_field_default`
-Фильтрует значение поля по умолчанию.
+
+Фильтрует значение поля по умолчанию для всех полей.
+
+```php
+add_filter( 'wpp_form_field_default', function( $default, $args ) {
+    return $default;
+}, 10, 2 );
+```
 
 ### `wpp_form_field_default_{field_name}`
+
 Фильтрует значение по умолчанию для конкретного поля.
 
+```php
+add_filter( 'wpp_form_field_default_first_name', function( $default ) {
+    return 'Иван';
+});
+```
+
 ### `wpp_form_field_conditional_value`
-Фильтрует значение, используемое для проверки условной логики.
+
+Фильтрует значение для проверки условной логики.
+
+```php
+add_filter( 'wpp_form_field_conditional_value', function( $value, $field_name, $field_object ) {
+    return $_POST[ $field_name ] ?? $value;
+}, 10, 3 );
+```
+
+### `wpp_assets_bootstrap_css_url`
+
+Переопределить URL CSS файла Bootstrap.
+
+```php
+add_filter( 'wpp_assets_bootstrap_css_url', function( $url ) {
+    return get_stylesheet_directory_uri() . '/css/bootstrap.min.css';
+});
+```
+
+### `wpp_assets_bootstrap_js_url`
+
+Переопределить URL JS файла Bootstrap.
+
+```php
+add_filter( 'wpp_assets_bootstrap_js_url', function( $url ) {
+    return get_stylesheet_directory_uri() . '/js/bootstrap.bundle.min.js';
+});
+```
+
+### `wpp_super_accordion_form_data`
+
+Передать данные для динамического заголовка Super Accordion.
+
+```php
+add_filter( 'wpp_super_accordion_form_data', function( $data, $field ) {
+    return $_POST['form_data'] ?? [];
+}, 10, 2 );
+```
+
+### `wpp_percent_money_field_value`
+
+Получить значение для поля Percent Money.
+
+```php
+add_filter( 'wpp_percent_money_field_value', function( $value, $field_name, $type, $field ) {
+    return $_POST[ $field_name ][ $type ] ?? $value;
+}, 10, 4 );
+```
+
+## Управление Bootstrap
+
+### Отключение Bootstrap
+
+```php
+add_action( 'plugins_loaded', function() {
+    if ( class_exists( 'WPP_Assets' ) ) {
+        WPP_Assets::disable_bootstrap();
+    }
+});
+```
+
+### Использование локального Bootstrap
+
+```php
+add_action( 'plugins_loaded', function() {
+    if ( class_exists( 'WPP_Assets' ) ) {
+        WPP_Assets::set_bootstrap_css_url( get_stylesheet_directory_uri() . '/css/bootstrap.min.css' );
+        WPP_Assets::set_bootstrap_js_url( get_stylesheet_directory_uri() . '/js/bootstrap.bundle.min.js' );
+    }
+});
+```
 
 ## Структура файлов
 
@@ -128,10 +298,23 @@ wpp-field-builder-manager/
 │   └── class-wpp-assets.php          # Управление ресурсами
 │
 ├── fields/                           # Реализации полей
-│   ├── text/
-│   ├── select/
-│   ├── checkbox/
-│   └── ... (другие типы полей)
+│   ├── accordion/                    # Аккордеон
+│   ├── address/                      # Адрес
+│   ├── button/                       # Кнопка
+│   ├── button_group/                 # Группа кнопок
+│   ├── checkbox/                     # Чекбокс
+│   ├── content/                      # Контент
+│   ├── datepicker/                   # Выбор даты
+│   ├── documents_upload/             # Загрузка файлов
+│   ├── fields_block/                 # Блок полей
+│   ├── number/                       # Число
+│   ├── percent_money/                # Процент/сумма
+│   ├── radio/                        # Радио-кнопки
+│   ├── repeater/                     # Повторяемые поля
+│   ├── select/                       # Выпадающий список
+│   ├── super_accordion/              # Супер-аккордеон
+│   ├── text/                         # Текст
+│   └── textarea/                     # Многострочный текст
 │
 ├── assets/                           # Общие ресурсы
 │   ├── css/
@@ -144,12 +327,98 @@ wpp-field-builder-manager/
 └── test/                             # Тестовые файлы
 ```
 
-## Требования
+## Примеры использования
 
-- WordPress 5.0 или выше
-- PHP 7.4 или выше
-- jQuery (входит в состав WordPress)
-- Bootstrap 5.3 (загружается автоматически через CDN)
+### Простая форма регистрации
+
+```php
+<form method="post" action="">
+    <?php
+    $first_name = new WPP_Text_Field([
+        'name' => 'first_name',
+        'label' => 'Имя',
+        'required' => true,
+        'width' => '1/2'
+    ]);
+    $first_name->render();
+
+    $last_name = new WPP_Text_Field([
+        'name' => 'last_name',
+        'label' => 'Фамилия',
+        'required' => true,
+        'width' => '1/2'
+    ]);
+    $last_name->render();
+
+    $email = new WPP_Text_Field([
+        'name' => 'email',
+        'label' => 'Email',
+        'placeholder' => 'example@mail.ru',
+        'required' => true
+    ]);
+    $email->render();
+
+    $phone = new WPP_Text_Field([
+        'name' => 'phone',
+        'label' => 'Телефон',
+        'placeholder' => '+7 (999) 000-00-00'
+    ]);
+    $phone->render();
+
+    $agree = new WPP_Checkbox_Field([
+        'name' => 'agree_terms',
+        'label' => 'Я согласен с условиями обработки персональных данных',
+        'required' => true
+    ]);
+    $agree->render();
+
+    $submit = new WPP_Button_Field([
+        'name' => 'submit',
+        'label' => 'Отправить',
+        'type' => 'submit'
+    ]);
+    $submit->render();
+    ?>
+</form>
+```
+
+### Форма с условной логикой
+
+```php
+<form method="post" action="">
+    <?php
+    $employment = new WPP_Radio_Field([
+        'name' => 'employment_status',
+        'label' => 'Тип занятости',
+        'options' => [
+            'employed' => 'Работаю по найму',
+            'self_employed' => 'Самозанятый',
+            'unemployed' => 'Не работаю'
+        ],
+        'default' => 'employed'
+    ]);
+    $employment->render();
+
+    $company = new WPP_Text_Field([
+        'name' => 'company_name',
+        'label' => 'Название компании',
+        'conditional' => [
+            'employment_status' => ['employed']
+        ]
+    ]);
+    $company->render();
+
+    $inn = new WPP_Text_Field([
+        'name' => 'inn',
+        'label' => 'ИНН',
+        'conditional' => [
+            'employment_status' => ['self_employed']
+        ]
+    ]);
+    $inn->render();
+    ?>
+</form>
+```
 
 ## Лицензия
 

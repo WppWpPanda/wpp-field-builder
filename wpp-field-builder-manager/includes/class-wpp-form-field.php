@@ -39,12 +39,18 @@ abstract class WPP_Form_Field {
 	 * Конструктор
 	 *
 	 * Принимает массив параметров и устанавливает значения по умолчанию.
-	 *
-	 * @param array $args Пользовательские параметры поля
+	 * Выполняет валидацию обязательных аргументов.
 	 *
 	 * @since 1.0.0
+	 * @param array $args Пользовательские параметры поля
+	 * @throws InvalidArgumentException Если не указано обязательное имя поля
 	 */
 	public function __construct( $args = [] ) {
+		// Валидация обязательных аргументов
+		if ( empty( $args['name'] ) ) {
+			throw new InvalidArgumentException( 'Параметр "name" является обязательным для всех полей.' );
+		}
+
 		$defaults = [
 			'name'        => '',           // Имя поля (name="...")
 			'label'       => '',           // Подпись поля
@@ -58,10 +64,8 @@ abstract class WPP_Form_Field {
 			'validation'  => null,         // Callback для валидации
 		];
 
-        $defaults['default'] = apply_filters( 'wpp_form_field_default', $defaults['default'], $args );
-
-        $defaults['default'] = apply_filters( 'wpp_form_field_default_' . $args['name'], $defaults['default'], $args );
-
+		$defaults['default'] = apply_filters( 'wpp_form_field_default', $defaults['default'], $args );
+		$defaults['default'] = apply_filters( 'wpp_form_field_default_' . sanitize_key( $args['name'] ), $defaults['default'], $args );
 
 		$this->args = wp_parse_args( $args, $defaults );
 	}
@@ -129,8 +133,8 @@ abstract class WPP_Form_Field {
 	 * Get width class for Bootstrap grid
 	 *
 	 * @since 1.0.0
-	 * @param string $width Width value
-	 * @return string Bootstrap column class
+	 * @param string $width Ширина поля (например, '1/2', 'full', '6')
+	 * @return string Класс колонки Bootstrap
 	 */
 	protected function get_width_class( $width ) {
 		$width_map = [
@@ -152,6 +156,8 @@ abstract class WPP_Form_Field {
 			'1/3'  => 'col-md-4',
 			'2/3'  => 'col-md-8',
 			'1/4'  => 'col-md-3',
+			'full' => 'col-12',
+			'12'   => 'col-12',
 		];
 
 		return $width_map[ $width ] ?? 'col-12';
@@ -161,7 +167,7 @@ abstract class WPP_Form_Field {
 	 * Get field type from class name
 	 *
 	 * @since 1.0.0
-	 * @return string Field type
+	 * @return string Тип поля
 	 */
 	protected function get_field_type() {
 		return strtolower( preg_replace( '/^WPP_|_Field$/', '', get_class( $this ) ) );
