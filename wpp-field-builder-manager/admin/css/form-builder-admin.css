@@ -1,0 +1,570 @@
+/**
+ * Стили для административной панели конструктора форм WPP
+ *
+ * @package WPP_Field_Builder_Manager
+ * @since 1.0.0
+ */
+
+/* Основной контейнер */
+.wpp-form-builder-wrap {
+	max-width: 1400px;
+	margin: 20px auto;
+}
+
+.wpp-form-builder-container {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+/* Панель инструментов */
+.wpp-form-builder-toolbar {
+	padding: 15px 20px;
+	background: #f6f7f7;
+	border-bottom: 1px solid #c3c4c7;
+	display: flex;
+	gap: 10px;
+	align-items: center;
+}
+
+.wpp-form-builder-toolbar .button {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.wpp-form-builder-toolbar .button .dashicons {
+	margin-top: 2px;
+}
+
+/* Рабочая область */
+.wpp-form-builder-workspace {
+	display: grid;
+	grid-template-columns: 250px 1fr 300px;
+	min-height: 600px;
+}
+
+/* Палитра полей */
+.wpp-form-builder-palette {
+	background: #f9f9f9;
+	border-right: 1px solid #c3c4c7;
+	padding: 15px;
+	overflow-y: auto;
+}
+
+.wpp-form-builder-palette h3 {
+	margin: 0 0 15px;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.wpp-palette-fields {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.wpp-palette-field {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	cursor: move;
+	transition: all 0.2s ease;
+}
+
+.wpp-palette-field:hover {
+	background: #f0f0f1;
+	border-color: #2271b1;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.wpp-palette-field .dashicons {
+	color: #2271b1;
+	font-size: 20px;
+	width: 20px;
+	height: 20px;
+}
+
+.wpp-palette-field .field-label {
+	font-size: 13px;
+	font-weight: 500;
+	color: #1d2327;
+}
+
+/* Область формы (canvas) */
+.wpp-form-builder-canvas {
+	background: #fff;
+	padding: 15px;
+	border-right: 1px solid #c3c4c7;
+	overflow-y: auto;
+}
+
+.wpp-form-builder-canvas h3 {
+	margin: 0 0 15px;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.wpp-form-canvas {
+	min-height: 400px;
+	background: #f9f9f9;
+	border: 2px dashed #c3c4c7;
+	border-radius: 4px;
+	padding: 20px;
+	position: relative;
+}
+
+.wpp-form-canvas.drag-over {
+	background: #e5f5fa;
+	border-color: #2271b1;
+	border-style: solid;
+}
+
+.wpp-canvas-placeholder {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 300px;
+	color: #646970;
+	text-align: center;
+}
+
+.wpp-canvas-placeholder .dashicons {
+	font-size: 48px;
+	width: 48px;
+	height: 48px;
+	margin-bottom: 15px;
+	opacity: 0.5;
+}
+
+.wpp-canvas-placeholder p {
+	margin: 0;
+	font-size: 14px;
+}
+
+/* Поля в форме */
+.wpp-form-field-item {
+	position: relative;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 15px;
+	margin-bottom: 10px;
+	cursor: move;
+	transition: all 0.2s ease;
+}
+
+.wpp-form-field-item:hover {
+	border-color: #2271b1;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.wpp-form-field-item.selected {
+	border-color: #2271b1;
+	background: #f0f6fc;
+	box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.2);
+}
+
+.wpp-field-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 10px;
+}
+
+.wpp-field-type-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 4px 8px;
+	background: #f0f0f1;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.wpp-field-type-badge .dashicons {
+	font-size: 14px;
+	width: 14px;
+	height: 14px;
+}
+
+.wpp-field-actions {
+	display: flex;
+	gap: 5px;
+}
+
+.wpp-field-actions button {
+	padding: 4px 8px;
+	font-size: 11px;
+	min-height: auto;
+}
+
+.wpp-field-preview {
+	padding: 10px;
+	background: #f9f9f9;
+	border-radius: 3px;
+	font-size: 13px;
+	color: #646970;
+}
+
+.wpp-field-preview input,
+.wpp-field-preview select,
+.wpp-field-preview textarea {
+	width: 100%;
+	padding: 8px;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	background: #fff;
+	font-size: 13px;
+}
+
+.wpp-field-preview label {
+	display: block;
+	margin-bottom: 5px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.wpp-field-required-marker {
+	color: #d63638;
+	margin-left: 2px;
+}
+
+/* Панель настроек */
+.wpp-form-builder-settings {
+	background: #f9f9f9;
+	padding: 15px;
+	overflow-y: auto;
+}
+
+.wpp-form-builder-settings h3 {
+	margin: 0 0 15px;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.wpp-settings-panel {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 15px;
+}
+
+.wpp-no-selection {
+	text-align: center;
+	padding: 30px 20px;
+	color: #646970;
+}
+
+.wpp-no-selection p {
+	margin: 0;
+	font-size: 13px;
+}
+
+/* Форма настроек поля */
+.wpp-field-settings-form {
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+}
+
+.wpp-setting-group {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.wpp-setting-group label {
+	font-size: 13px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.wpp-setting-group input[type="text"],
+.wpp-setting-group input[type="email"],
+.wpp-setting-group input[type="number"],
+.wpp-setting-group select,
+.wpp-setting-group textarea {
+	width: 100%;
+	padding: 8px 10px;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	font-size: 13px;
+}
+
+.wpp-setting-group input:focus,
+.wpp-setting-group select:focus,
+.wpp-setting-group textarea:focus {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+	outline: none;
+}
+
+.wpp-setting-group .description {
+	font-size: 11px;
+	color: #646970;
+	margin-top: 3px;
+}
+
+.wpp-checkbox-group {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.wpp-checkbox-group input[type="checkbox"] {
+	margin: 0;
+}
+
+.wpp-checkbox-group label {
+	font-weight: 400;
+	cursor: pointer;
+}
+
+/* Опции для select/radio/checkbox */
+.wpp-options-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.wpp-option-item {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.wpp-option-item input[type="text"] {
+	flex: 1;
+}
+
+.wpp-option-item .remove-option {
+	padding: 4px 8px;
+	min-height: auto;
+	color: #d63638;
+	border-color: #d63638;
+}
+
+.wpp-option-item .remove-option:hover {
+	background: #d63638;
+	color: #fff;
+}
+
+.wpp-add-option-btn {
+	margin-top: 5px;
+}
+
+/* Условная логика */
+.wpp-conditional-logic-section {
+	border-top: 1px solid #c3c4c7;
+	padding-top: 15px;
+	margin-top: 15px;
+}
+
+.wpp-conditional-rules {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-top: 10px;
+}
+
+.wpp-conditional-rule {
+	display: grid;
+	grid-template-columns: 1fr 120px 1fr auto;
+	gap: 8px;
+	align-items: center;
+	padding: 10px;
+	background: #f9f9f9;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+}
+
+.wpp-conditional-rule select,
+.wpp-conditional-rule input[type="text"] {
+	width: 100%;
+	padding: 6px 8px;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	font-size: 12px;
+}
+
+.wpp-remove-rule {
+	padding: 6px 8px;
+	min-height: auto;
+	color: #d63638;
+	border-color: #d63638;
+}
+
+.wpp-add-rule-btn {
+	margin-top: 10px;
+}
+
+/* Модальное окно */
+.wpp-config-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.wpp-modal-content {
+	background: #fff;
+	border-radius: 4px;
+	box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+	max-width: 800px;
+	width: 90%;
+	max-height: 80vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.wpp-modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 15px 20px;
+	border-bottom: 1px solid #c3c4c7;
+}
+
+.wpp-modal-header h2 {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.wpp-modal-close {
+	background: none;
+	border: none;
+	padding: 5px;
+	cursor: pointer;
+	color: #646970;
+}
+
+.wpp-modal-close:hover {
+	color: #d63638;
+}
+
+.wpp-modal-body {
+	padding: 20px;
+	flex: 1;
+	overflow-y: auto;
+}
+
+#wpp-config-output {
+	width: 100%;
+	min-height: 300px;
+	padding: 12px;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	font-family: 'Consolas', 'Monaco', monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	resize: vertical;
+	background: #f9f9f9;
+}
+
+.wpp-modal-body code {
+	display: block;
+	margin-top: 15px;
+	padding: 10px;
+	background: #f0f0f1;
+	border-radius: 3px;
+	font-size: 13px;
+	color: #1d2327;
+}
+
+.wpp-modal-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	padding: 15px 20px;
+	border-top: 1px solid #c3c4c7;
+	background: #f9f9f9;
+}
+
+/* Адаптивность */
+@media screen and (max-width: 1200px) {
+	.wpp-form-builder-workspace {
+		grid-template-columns: 200px 1fr 250px;
+	}
+}
+
+@media screen and (max-width: 900px) {
+	.wpp-form-builder-workspace {
+		grid-template-columns: 1fr;
+	}
+
+	.wpp-form-builder-palette,
+	.wpp-form-builder-settings {
+		border: none;
+		border-bottom: 1px solid #c3c4c7;
+	}
+
+	.wpp-conditional-rule {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* Уведомления */
+.wpp-notification {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	padding: 12px 20px;
+	background: #2271b1;
+	color: #fff;
+	border-radius: 4px;
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+	z-index: 100001;
+	animation: wpp-slide-in 0.3s ease;
+}
+
+.wpp-notification.success {
+	background: #00a32a;
+}
+
+.wpp-notification.error {
+	background: #d63638;
+}
+
+@keyframes wpp-slide-in {
+	from {
+		transform: translateX(100%);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+
+/* Drag and drop индикаторы */
+.wpp-form-field-item.ui-sortable-helper {
+	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+	transform: rotate(2deg);
+}
+
+.wpp-form-field-item.ui-sortable-placeholder {
+	background: #f0f6fc;
+	border: 2px dashed #2271b1;
+	visibility: visible !important;
+	height: 60px;
+}
