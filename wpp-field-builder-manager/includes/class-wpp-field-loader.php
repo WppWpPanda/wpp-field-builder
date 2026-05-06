@@ -102,7 +102,7 @@ class WPP_Field_Loader {
 	 * @param string $name Имя папки
 	 * @return string Нормализованная часть имени класса
 	 */
-	private function normalize_class_name( $name ) {
+	private function normalize_class_name( string $name ): string {
 		return str_replace( '_', '', ucwords( str_replace( [ '-', '_' ], '_', $name ), '_' ) );
 	}
 }

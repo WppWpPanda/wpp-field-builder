@@ -80,17 +80,28 @@ abstract class WPP_Form_Field {
 	 * @since 1.0.0
 	 */
 	public function render() {
-		$called_class = get_called_class();
-		$parent_class = __CLASS__;
+		$called_class = static::class;
+		$parent_class = self::class;
 
-		trigger_error(
-			"Метод render() не реализован в классе {$called_class}. Используется базовая реализация из {$parent_class}.",
-			E_USER_WARNING
-		);
+		if ( $called_class === $parent_class ) {
+			trigger_error(
+				sprintf(
+					/* translators: 1: class name */
+					esc_html__( 'Метод render() должен быть реализован в классе %s.', 'wpp-field-builder' ),
+					esc_html( $called_class )
+				),
+				E_USER_WARNING
+			);
 
-		echo '<div class="wpp-field-error alert alert-danger">';
-		echo '<strong>Ошибка:</strong> Метод render() должен быть реализован в дочернем классе.';
-		echo '</div>';
+			echo '<div class="wpp-field-error alert alert-danger">';
+			echo '<strong>' . esc_html__( 'Ошибка:', 'wpp-field-builder' ) . '</strong> ' .
+				sprintf(
+					/* translators: 1: class name */
+					esc_html__( 'Метод render() должен быть реализован в дочернем классе %s.', 'wpp-field-builder' ),
+					esc_html( $called_class )
+				);
+			echo '</div>';
+		}
 	}
 
 	// ┌────────────────────────────────────────────┐
@@ -136,7 +147,7 @@ abstract class WPP_Form_Field {
 	 * @param string $width Ширина поля (например, '1/2', 'full', '6')
 	 * @return string Класс колонки Bootstrap
 	 */
-	protected function get_width_class( $width ) {
+	protected function get_width_class( string $width ): string {
 		$width_map = [
 			'1/12' => 'col-md-1',
 			'1'    => 'col-md-1',
@@ -169,8 +180,8 @@ abstract class WPP_Form_Field {
 	 * @since 1.0.0
 	 * @return string Тип поля
 	 */
-	protected function get_field_type() {
-		return strtolower( preg_replace( '/^WPP_|_Field$/', '', get_class( $this ) ) );
+	protected function get_field_type(): string {
+		return strtolower( preg_replace( '/^WPP_|_Field$/', '', static::class ) );
 	}
 
 	/**
@@ -254,7 +265,7 @@ abstract class WPP_Form_Field {
 	 * @return mixed Проверенное значение
 	 */
 	public function validate( $value ) {
-		if ( $this->args['validation'] && is_callable( $this->args['validation'] ) ) {
+		if ( ! empty( $this->args['validation'] ) && is_callable( $this->args['validation'] ) ) {
 			return call_user_func( $this->args['validation'], $value );
 		}
 
