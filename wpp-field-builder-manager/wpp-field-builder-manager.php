@@ -37,6 +37,19 @@ if ( is_admin() ) {
 add_action( 'plugins_loaded', 'wpp_field_builder_init' );
 
 /**
+ * Добавляет ссылку на настройки в список плагинов.
+ *
+ * @param array $links Существующие ссылки плагина.
+ * @return array Обновлённый массив ссылок.
+ */
+function wpp_field_builder_add_settings_link( $links ) {
+	$settings_link = '<a href="' . admin_url( 'admin.php?page=wpp-form-builder' ) . '">Конструктор форм</a>';
+	array_unshift( $links, $settings_link );
+	return $links;
+}
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wpp_field_builder_add_settings_link' );
+
+/**
  * Инициализация WPP Field Builder
  *
  * @since 1.0.0

@@ -1,24 +1,29 @@
 ```
-# Compiled and build artifacts
-*.pyc
-__pycache__/
-
 # Dependencies
 vendor/
 node_modules/
 
-# Logs and temp files
+# Build artifacts
+dist/
+build/
+*.min.js
+*.min.css
+*.map
+
+# Logs
 *.log
-*.tmp
 
 # Environment
 .env
 .env.local
-*.env.*
+.env.*
 
-# Editors
+# Editor
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
 # OS generated files
 .DS_Store
