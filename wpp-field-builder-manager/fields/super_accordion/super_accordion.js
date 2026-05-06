@@ -1,21 +1,24 @@
 (function ($) {
     'use strict';
 
-    function updateAccordionHeaders() {
+    // Делаем функцию доступной глобально для вызова из других скриптов (например, repeater)
+    window.updateAccordionHeaders = function() {
         $('.wpp-super-accordion').each(function () {
             const $accordion = $(this);
             const headerTemplate = $accordion.attr('data-header');
 
             if (!headerTemplate) return;
 
-            const fields = $accordion.find('input, select');
+            const fields = $accordion.find('input, select, textarea');
             const data = {};
 
             fields.each(function () {
                 const name = $(this).attr('name');
                 const value = $(this).val();
                 if (name) {
-                    data[name] = '<span>' + value + '</span>';
+                    // Используем только имя поля без индексов repeater для шаблона
+                    const cleanName = name.replace(/\[\d+\]/g, '').replace(/\[\]/g, '');
+                    data[cleanName] = '<span>' + (value || '') + '</span>';
                 }
             });
 
@@ -26,24 +29,29 @@
             });
 
             if ($titleEl.length && parsedHeader) {
-                $titleEl.html( parsedHeader);
+                $titleEl.html(parsedHeader);
             }
         });
-    }
+    };
 
-
-// Вызываем при изменении полей внутри аккордеона
-    $(document).on('input', '.wpp-super-accordion input, .wpp-super-accordion select', function () {
+    // Вызываем при изменении полей внутри аккордеона - используем делегирование
+    $(document).on('input', '.wpp-super-accordion input, .wpp-super-accordion select, .wpp-super-accordion textarea', function () {
         updateAccordionHeaders();
     });
 
     $(document).ready(function () {
-
+        // Инициализация заголовков при загрузке
         updateAccordionHeaders();
 
-        $('.wpp-super-accordion').on('click', '.wpp-super-accordion-header', function () {
+        // Обработчик клика на заголовок аккордеона - используем делегирование
+        $(document).on('click', '.wpp-super-accordion-header', function (e) {
+            // Предотвращаем срабатывание при клике на input/select внутри заголовка
+            if ($(e.target).is('input, select, textarea, button, a')) {
+                return;
+            }
 
-            const accordion = $(this).closest('.wpp-super-accordion');
+            const $header = $(this);
+            const accordion = $header.closest('.wpp-super-accordion');
             const body = accordion.find('.wpp-super-accordion-body');
             const icon = accordion.find('.toggle-icon');
 
@@ -57,7 +65,6 @@
                 accordion.addClass('open');
             }
         });
-        
     });
 
 })(jQuery);

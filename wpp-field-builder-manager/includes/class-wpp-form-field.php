@@ -123,6 +123,9 @@ abstract class WPP_Form_Field {
 		$width_class = $this->get_width_class( $width );
 
 		$classes[] = $width_class;
+		// Добавляем класс типа поля для JS-селекторов
+		$field_type_class = 'wpp-field-type-' . sanitize_key( static::class );
+		$classes[] = $field_type_class;
 
 		// Условная логика
 		$condition_data = '';

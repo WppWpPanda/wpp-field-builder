@@ -65,7 +65,7 @@ if (!class_exists('WPP_Fields_Block_Field') && class_exists('WPP_Form_Field')) :
 			$this->render_inner_fields();
 
 			echo '</div>';
-
+			$this->render_description();
 			$this->render_wrapper_end();
 		}
 
