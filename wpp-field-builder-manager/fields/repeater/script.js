@@ -1,13 +1,13 @@
 jQuery(document).ready(function ($) {
     'use strict';
 
-    $('.wpp-repeater-container').each(function () {
-        const container = $(this);
+    // Используем делегирование событий для работы с динамически добавленными элементами
+    $(document).on('click', '.wpp-repeater-add', function () {
+        const $addBtn = $(this);
+        const container = $addBtn.closest('.wpp-repeater-container');
         const template = container.find('script[type="text/html"]').first();
         const innerContainer = container.find('.wpp-repeater-inner');
-        const addBtn = container.find('.wpp-repeater-add');
-        const max = parseInt(addBtn.data('max')) || 999;
-        const min = parseInt(container.data('min')) || 1;
+        const max = parseInt($addBtn.data('max')) || 999;
 
         if (!template.length) {
             return;
@@ -20,73 +20,75 @@ jQuery(document).ready(function ($) {
             return;
         }
 
-        // Получаем данные инициализации
-        let initData = {};
-        const dataScript = container.find('.wpp-repeater-data');
-        if (dataScript.length) {
-            try {
-                initData = JSON.parse(dataScript.text());
-            } catch (e) {
-                console.error('Error parsing repeater data:', e);
-            }
+        const currentCount = innerContainer.children('.wpp-repeater-block').length;
+
+        if (currentCount >= max) {
+            return;
         }
 
-        // Функция для получения следующего уникального индекса
-        function getNextIndex() {
-            let maxIndex = -1;
-            innerContainer.find('[data-repeater-index]').each(function() {
-                const index = parseInt($(this).data('repeater-index'));
-                if (!isNaN(index) && index > maxIndex) {
-                    maxIndex = index;
-                }
-            });
-            return maxIndex + 1;
+        const newIndex = getNextIndex(innerContainer);
+        let html = tmpl.innerHTML.replace(/__index__/g, newIndex);
+
+        // Добавляем data-атрибут для отслеживания индекса
+        const tempDiv = $('<div>').html(html);
+        tempDiv.find('.wpp-repeater-block').attr('data-repeater-index', newIndex);
+        html = tempDiv.html();
+
+        innerContainer.append(html);
+
+        // Реинициализируем datepicker для нового поля
+        innerContainer.find('.wpp-repeater-block:last input[data-type="date"]').datepicker({
+            dateFormat: 'yy-mm-dd',
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '-100:+10'
+        });
+
+        // Перезапускаем автозаполнение адреса, если есть
+        if (typeof initGoogleAutocompleteFields === 'function') {
+            initGoogleAutocompleteFields();
+        }
+        
+        // Обновляем заголовки супер-аккордеонов после добавления блока
+        if (typeof updateAccordionHeaders === 'function') {
+            updateAccordionHeaders();
+        }
+    });
+
+    // Удаление блока - используем делегирование
+    $(document).on('click', '.wpp-repeater-remove', function () {
+        const $removeBtn = $(this);
+        const block = $removeBtn.closest('.wpp-repeater-block');
+        const container = block.closest('.wpp-repeater-container');
+        const innerContainer = container.find('.wpp-repeater-inner');
+        const min = parseInt(container.data('min')) || 1;
+        const currentCount = innerContainer.children('.wpp-repeater-block').length;
+
+        // Не удаляем, если достигнут минимум
+        if (currentCount <= min) {
+            return;
         }
 
-        // Обработчик кнопки "Добавить"
-        addBtn.on('click', function () {
-            const currentCount = innerContainer.children('.wpp-repeater-block').length;
+        block.remove();
+    });
 
-            if (currentCount >= max) {
-                return;
-            }
-
-            const newIndex = getNextIndex();
-            let html = tmpl.innerHTML.replace(/__index__/g, newIndex);
-
-            // Добавляем data-атрибут для отслеживания индекса
-            const tempDiv = $('<div>').html(html);
-            tempDiv.find('.wpp-repeater-block').attr('data-repeater-index', newIndex);
-            html = tempDiv.html();
-
-            innerContainer.append(html);
-
-            // 🔁 Реинициализируем datepicker для нового поля
-            innerContainer.find('.wpp-repeater-block:last input[data-type="date"]').datepicker({
-                dateFormat: 'yy-mm-dd',
-                changeMonth: true,
-                changeYear: true,
-                yearRange: '-100:+10'
-            });
-
-            // Перезапускаем автозаполнение адреса, если есть
-            if (typeof initGoogleAutocompleteFields === 'function') {
-                initGoogleAutocompleteFields();
+    // Функция для получения следующего уникального индекса
+    function getNextIndex($container) {
+        let maxIndex = -1;
+        $container.find('[data-repeater-index]').each(function() {
+            const index = parseInt($(this).data('repeater-index'));
+            if (!isNaN(index) && index > maxIndex) {
+                maxIndex = index;
             }
         });
+        return maxIndex + 1;
+    }
 
-        // Удаление блока
-        innerContainer.on('click', '.wpp-repeater-remove', function () {
-            const block = $(this).closest('.wpp-repeater-block');
-            const currentCount = innerContainer.children('.wpp-repeater-block').length;
-
-            // Не удаляем, если достигнут минимум
-            if (currentCount <= min) {
-                return;
-            }
-
-            block.remove();
-        });
+    // Инициализация существующих контейнеров repeater
+    $('.wpp-repeater-container').each(function () {
+        const container = $(this);
+        const innerContainer = container.find('.wpp-repeater-inner');
+        const min = parseInt(container.data('min')) || 1;
 
         // Инициализация существующих блоков (если есть)
         // Блоки уже отрендерены PHP, просто добавляем индексы если их нет

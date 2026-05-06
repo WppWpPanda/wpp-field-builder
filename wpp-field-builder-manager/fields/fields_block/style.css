@@ -1,0 +1,25 @@
+/**
+ * WPP Fields Block Field Styles
+ */
+
+.wpp-fields-block-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.wpp-fields-block {
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 5px;
+    border: 1px solid #e0e0e0;
+}
+
+.wpp-fields-block .wpp-field {
+    margin-bottom: 15px;
+}
+
+.wpp-fields-block .wpp-field:last-child {
+    margin-bottom: 0;
+}
