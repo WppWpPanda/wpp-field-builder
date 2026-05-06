@@ -4,8 +4,8 @@
 __pycache__/
 
 # Dependencies
-node_modules/
 vendor/
+node_modules/
 
 # Logs and temp files
 *.log
@@ -20,12 +20,21 @@ vendor/
 .vscode/
 .idea/
 
-# OS specific
+# OS generated files
 .DS_Store
 Thumbs.db
 
-# Build directories
-dist/
-build/
-target/
+# WordPress specific
+wp-content/cache/
+*.sql
+*.sql.gz
+
+# Backup files
+*~
+*.bak
+*.backup
+
+# IDE and editor files
+*.swp
+*.swo
 ```
