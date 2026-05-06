@@ -1,67 +1,49 @@
 <?php
 /**
- * Plugin Name: WPP Field Builder Manager
- * Description: Универсальный менеджер форм для WordPress. Поддерживает кастомные поля, условную логику, валидацию и адаптивный дизайн на Bootstrap.
- * Version: 1.0.0
- * Author: Your Name
- * Text Domain: wpp-field-builder
+ * Плагин: WPP Field Builder Manager
+ * Описание: Универсальный менеджер форм для WordPress. Поддерживает кастомные поля, условную логику, валидацию и адаптивный дизайн на Bootstrap.
+ * Версия: 1.0.0
+ * Автор: Your Name
+ * Текстовое домен: wpp-field-builder
  */
 
-if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Защита от прямого доступа
 }
 
-// Определяем константы плагина
-if (!defined('WPP_FIELD_BUILDER_PATH')) {
-    define('WPP_FIELD_BUILDER_PATH', plugin_dir_path(__FILE__));
-}
-if (!defined('WPP_FIELD_BUILDER_URL')) {
-    define('WPP_FIELD_BUILDER_URL', plugin_dir_url(__FILE__));
-}
+// Константы плагина
+define( 'WPP_FIELD_BUILDER_PATH', plugin_dir_path( __FILE__ ) );
+define( 'WPP_FIELD_BUILDER_URL', plugin_dir_url( __FILE__ ) );
+define( 'WPP_FIELD_BUILDER_VERSION', '1.0.0' );
 
 /**
- * Подключаем основные классы плагина
+ * Загрузка необходимых классов плагина
  */
 require_once WPP_FIELD_BUILDER_PATH . 'includes/class-wpp-form-field.php';
+require_once WPP_FIELD_BUILDER_PATH . 'includes/class-wpp-field-loader.php';
+require_once WPP_FIELD_BUILDER_PATH . 'includes/class-wpp-assets.php';
 
-// Подключаем загрузчик полей
-if (file_exists(WPP_FIELD_BUILDER_PATH . 'includes/class-wpp-field-loader.php')) {
-    require_once WPP_FIELD_BUILDER_PATH . 'includes/class-wpp-field-loader.php';
-} else {
-    error_log('WPP_Field_Builder: class-wpp-field-loader.php не найден!');
+/**
+ * Инициализация компонентов плагина
+ */
+add_action( 'plugins_loaded', 'wpp_field_builder_init' );
+
+/**
+ * Инициализация WPP Field Builder
+ *
+ * @since 1.0.0
+ * @return void
+ */
+function wpp_field_builder_init() {
+	// Инициализация ресурсов (Bootstrap, jQuery)
+	WPP_Assets::init();
+	
+	// Загрузка всех полей
+	WPP_Field_Loader::init();
+	
+	// Загрузка тестовой формы, если существует
+	$test_form_path = WPP_FIELD_BUILDER_PATH . 'test/test-form.php';
+	if ( file_exists( $test_form_path ) ) {
+		require_once $test_form_path;
+	}
 }
-
-// Подключаем ассеты (Bootstrap, jQuery)
-if (file_exists(WPP_FIELD_BUILDER_PATH . 'includes/class-wpp-assets.php')) {
-    require_once WPP_FIELD_BUILDER_PATH . 'includes/class-wpp-assets.php';
-} else {
-    error_log('WPP_Field_Builder: class-wpp-assets.php не найден!');
-}
-
-/**
- * Инициализируем систему ассетов (Bootstrap, jQuery)
- */
-add_action('plugins_loaded', ['WPP_Assets', 'init']);
-
-/**
- * Загружаем все поля при активации плагина
- */
-add_action('plugins_loaded', function () {
-    if (class_exists('WPP_Field_Loader')) {
-        WPP_Field_Loader::init();
-    } else {
-        error_log('WPP_Field_Builder: Не удалось запустить WPP_Field_Loader — класс не найден');
-    }
-});
-
-/**
- * Подключаем тестовую форму после загрузки всех полей
- */
-add_action('plugins_loaded', function () {
-    $test_form_path = WPP_FIELD_BUILDER_PATH . 'test/test-form.php';
-    if (file_exists($test_form_path)) {
-        require_once $test_form_path;
-    } else {
-        error_log('WPP_Field_Builder: test/test-form.php не найден!');
-    }
-});

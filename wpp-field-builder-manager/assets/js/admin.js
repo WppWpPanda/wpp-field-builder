@@ -1,19 +1,18 @@
 /**
  * WPP Field Builder Manager — Admin JavaScript
  *
- * Этот файл содержит логику работы с полями формы в админке WordPress.
+ * Обрабатывает логику полей формы в админ-панели WordPress.
  * Поддерживает условное отображение, интерактивность и базовую валидацию.
  *
  * @package WPP_Field_Builder
  * @since 1.0.0
- * @author Your Name <your@email.com>
  */
 
 (function ($) {
     'use strict';
 
     $(document).ready(function () {
-        console.log('WPP Field Builder: Admin script loaded.');
+        console.log('WPP Field Builder: Admin-скрипт загружен.');
 
         // Инициализация условной логики при загрузке страницы
         handleConditionalFields();
@@ -24,7 +23,7 @@
         });
 
         /**
-         * Обработчик условного отображения полей
+         * Обработка условного отображения полей
          *
          * Поля могут зависеть от значений других полей.
          * Условия передаются через data-condition (JSON-строка).
@@ -49,22 +48,22 @@
 
                         field.toggle(show);
                     } catch (e) {
-                        console.error('Ошибка разбора условия:', conditionData);
+                        console.error('WPP Field Builder: Ошибка условной логики:', conditionData, e);
                     }
                 }
             });
         }
 
         /**
-         * Добавляет поддержку Tooltips из Bootstrap
+         * Инициализация Bootstrap Tooltips
          */
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
 
         /**
-         * Пример кастомной валидации в админке
+         * Кастомная валидация для админ-форм
          */
         $('#post').on('submit', function (e) {
             let isValid = true;
@@ -84,7 +83,6 @@
                 alert('Пожалуйста, заполните все обязательные поля.');
             }
         });
-
     });
 
 })(jQuery);
