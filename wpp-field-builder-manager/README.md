@@ -11,23 +11,31 @@
 - **Поддержка админки и фронтенда**: Работает как в админ-панели WordPress, так и на публичной части сайта
 - **Поддержка Select2**: Улучшенные выпадающие списки с поиском
 - **Гибкая настройка Bootstrap**: Возможность использовать локальные файлы или CDN
+- **Визуальный конструктор форм**: Drag-and-drop интерфейс для создания форм в админке с возможностью копирования конфигурации
 
-## Требования
+## Быстрый старт
 
-- WordPress 5.0 или выше
-- PHP 7.4 или выше
-- jQuery (входит в состав WordPress)
-- Bootstrap 5.3 (загружается автоматически через CDN, можно отключить)
+### Вариант 1: Использование визуального конструктора (рекомендуется)
 
-## Установка
+1. После активации плагина перейдите в меню **WPP Field Builder → Конструктор форм**
+2. Перетащите нужные поля из палитры слева в рабочую область
+3. Настройте каждое поле: название, метку, обязательность, ширину, опции
+4. Добавьте условную логику при необходимости
+5. Нажмите кнопку **"Копировать конфигурацию"**
+6. Скопируйте полученный PHP-код и используйте в вашем шаблоне:
 
-1. Загрузите папку `wpp-field-builder-manager` в `/wp-content/plugins/`
-2. Активируйте плагин через меню 'Плагины' в WordPress
-3. Используйте классы полей в коде вашей темы или плагина
+```php
+<?php
+$config = [
+    // вставьте скопированную конфигурацию здесь
+];
+wpp_form( $config );
+?>
+```
 
-## Использование
+### Вариант 2: Программное создание формы
 
-### Создание базового поля
+#### Создание базового поля
 
 ```php
 // Текстовое поле
@@ -36,7 +44,7 @@ $text_field = new WPP_Text_Field([
     'label' => 'Имя',
     'placeholder' => 'Введите ваше имя',
     'required' => true,
-    'width' => '1/2'
+    'width' => 'half'
 ]);
 $text_field->render();
 ```
@@ -189,6 +197,44 @@ $percent_money_field->render();
 | `1/12` или `1` | col-md-1 | Одна двенадцатая |
 
 Также поддерживаются числовые значения: 5, 7, 9, 10, 11.
+
+## Требования
+
+- WordPress 5.0 или выше
+- PHP 7.4 или выше
+- jQuery (входит в состав WordPress)
+- Bootstrap 5.3 (загружается автоматически через CDN, можно отключить)
+
+## Установка
+
+1. Загрузите папку `wpp-field-builder-manager` в `/wp-content/plugins/`
+2. Активируйте плагин через меню 'Плагины' в WordPress
+3. Перейдите в меню **WPP Field Builder → Конструктор форм** для создания формы визуально
+   ИЛИ используйте классы полей в коде вашей темы или плагина
+
+## Управление Bootstrap
+
+### Отключение автоматической загрузки Bootstrap
+
+Если ваша тема уже использует Bootstrap, отключите его загрузку плагином:
+
+```php
+add_filter( 'wpp_assets_load_bootstrap', '__return_false' );
+```
+
+### Использование локальных файлов Bootstrap
+
+```php
+// Локальный CSS
+add_filter( 'wpp_assets_bootstrap_css_url', function( $url ) {
+    return get_stylesheet_directory_uri() . '/css/bootstrap.min.css';
+});
+
+// Локальный JS
+add_filter( 'wpp_assets_bootstrap_js_url', function( $url ) {
+    return get_stylesheet_directory_uri() . '/js/bootstrap.bundle.min.js';
+});
+```
 
 ## Хуки и фильтры
 
@@ -418,6 +464,159 @@ wpp-field-builder-manager/
     $inn->render();
     ?>
 </form>
+```
+
+## Пример использования визуального конструктора
+
+### Шаг 1: Создание формы в конструкторе
+
+1. Перейдите в **WPP Field Builder → Конструктор форм**
+2. Перетащите из палитры поля:
+   - Текстовое поле (для имени)
+   - Email поле (для email)
+   - Select поле (для типа занятости)
+   - Текстовое поле (для названия компании)
+3. Настройте каждое поле:
+   - Имя: `first_name`, Метка: `Ваше имя`, Обязательно: ✓
+   - Email: `email`, Метка: `Email`, Обязательно: ✓
+   - Select: `employment_status`, Метка: `Тип занятости`, Опции: `Работаю по найму`, `Самозанятый`, `Не работаю`
+   - Text: `company_name`, Метка: `Название компании`
+4. Для поля "Название компании" добавьте условную логику:
+   - Показывать если: `employment_status` равно `Работаю по найму`
+5. Нажмите **"Копировать конфигурацию"**
+
+### Шаг 2: Использование сгенерированной конфигурации
+
+Скопируйте полученный код и используйте в шаблоне:
+
+```php
+<?php
+$config = [
+    [
+        'id' => 'field_1234567890_abc',
+        'type' => 'text',
+        'name' => 'first_name',
+        'label' => 'Ваше имя',
+        'placeholder' => '',
+        'required' => true,
+        'width' => 'full',
+        'conditional_logic' => []
+    ],
+    [
+        'id' => 'field_1234567891_def',
+        'type' => 'email',
+        'name' => 'email',
+        'label' => 'Email',
+        'placeholder' => 'example@mail.ru',
+        'required' => true,
+        'width' => 'full',
+        'conditional_logic' => []
+    ],
+    [
+        'id' => 'field_1234567892_ghi',
+        'type' => 'select',
+        'name' => 'employment_status',
+        'label' => 'Тип занятости',
+        'placeholder' => '',
+        'required' => false,
+        'width' => 'full',
+        'options' => ['Работаю по найму', 'Самозанятый', 'Не работаю'],
+        'conditional_logic' => []
+    ],
+    [
+        'id' => 'field_1234567893_jkl',
+        'type' => 'text',
+        'name' => 'company_name',
+        'label' => 'Название компании',
+        'placeholder' => '',
+        'required' => false,
+        'width' => 'full',
+        'conditional_logic' => [
+            [
+                'field' => 'employment_status',
+                'operator' => 'equals',
+                'value' => 'Работаю по найму'
+            ]
+        ]
+    ]
+];
+
+// Отображение формы
+echo wpp_render_form( $config );
+?>
+```
+
+## Структура файлов плагина
+
+```
+wpp-field-builder-manager/
+├── admin/                          # Административная панель
+│   ├── class-wpp-form-builder-admin.php  # Класс конструктора форм
+│   ├── css/
+│   │   └── form-builder-admin.css        # Стили конструктора
+│   └── js/
+│       └── form-builder-admin.js         # JavaScript конструктора
+├── assets/                         # Публичные ассеты
+│   ├── css/                        # CSS файлы
+│   └── js/                         # JavaScript файлы
+├── fields/                         # Классы полей
+│   ├── text/                       # Текстовые поля
+│   ├── select/                     # Выпадающие списки
+│   ├── checkbox/                   # Чекбоксы
+│   └── ...                         # Другие типы полей
+├── includes/                       # Основные классы
+│   ├── class-wpp-form-field.php    # Базовый класс поля
+│   ├── class-wpp-field-loader.php  # Загрузчик полей
+│   └── class-wpp-assets.php        # Управление ассетами
+├── languages/                      # Файлы перевода
+├── test/                           # Тесты
+├── README.md                       # Документация
+└── wpp-field-builder-manager.php   # Главный файл плагина
+```
+
+## Часто задаваемые вопросы
+
+### Как добавить собственное поле?
+
+Создайте класс, наследующийся от `WPP_Form_Field`:
+
+```php
+class WPP_Custom_Field extends WPP_Form_Field {
+    public function render() {
+        // Ваша логика отображения
+    }
+}
+```
+
+Зарегистрируйте поле через фильтр:
+
+```php
+add_filter( 'wpp_form_builder_available_fields', function( $fields ) {
+    $fields[] = [
+        'type' => 'custom',
+        'label' => 'Моё поле',
+        'icon' => 'dashicons-star-filled'
+    ];
+    return $fields;
+});
+```
+
+### Как сохранить данные формы?
+
+Обработайте отправку формы стандартным способом WordPress:
+
+```php
+if ( isset( $_POST['wpp_form_submit'] ) ) {
+    check_admin_referer( 'wpp_form_submit_action', 'wpp_form_nonce' );
+    
+    $data = [
+        'first_name' => sanitize_text_field( $_POST['first_name'] ),
+        'email' => sanitize_email( $_POST['email'] ),
+    ];
+    
+    // Сохранение или обработка данных
+    update_option( 'my_form_data', $data );
+}
 ```
 
 ## Лицензия
