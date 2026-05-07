@@ -568,3 +568,59 @@
 	visibility: visible !important;
 	height: 60px;
 }
+
+/* Зоны сброса внутри контейнеров */
+.wpp-drop-zone {
+	min-height: 80px;
+	position: relative;
+	transition: all 0.2s ease;
+}
+
+.wpp-drop-zone.drag-over {
+	background: rgba(34, 113, 177, 0.05);
+	border: 2px dashed #2271b1;
+	border-radius: 4px;
+}
+
+.wpp-drop-zone .wpp-canvas-placeholder,
+.wpp-drop-zone .wpp-repeater-block {
+	text-align: center;
+	padding: 20px;
+	color: #646970;
+}
+
+.wpp-subfields-container {
+	margin-top: 10px;
+}
+
+.wpp-subfields-container .wpp-form-field-item {
+	margin-bottom: 10px;
+}
+
+.wpp-subfield-item[data-parent-id] {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.wpp-subfield-item[data-parent-id] .wpp-field-header {
+	background: #f6f7f7;
+	border-bottom: 1px solid #c3c4c7;
+}
+
+/* Стили для вложенных аккордеонов */
+.wpp-subfields-container .accordion {
+	margin-top: 10px;
+}
+
+/* Стили для полей внутри repeater */
+.wpp-repeater-inner .wpp-form-field-item {
+	margin-bottom: 8px;
+}
+
+/* Адаптация для разных уровней вложенности */
+.wpp-subfields-container .wpp-subfields-container {
+	padding-left: 15px;
+	border-left: 2px solid #2271b1;
+	margin-left: 10px;
+}
