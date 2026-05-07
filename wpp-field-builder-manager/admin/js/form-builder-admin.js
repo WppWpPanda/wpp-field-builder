@@ -193,7 +193,14 @@
 				required: false,
 				width: 'full',
 				options: ['select', 'multiselect', 'radio'].includes(fieldType) ? ['Опция 1', 'Опция 2'] : undefined,
-				conditional_logic: []
+				conditional_logic: [],
+				// Специфичные настройки для сложных полей
+				title: ['accordion', 'super_accordion', 'repeater'].includes(fieldType) ? fieldInfo.label : undefined,
+				header: fieldType === 'super_accordion' ? '' : undefined,
+				fields: ['accordion', 'fields_block', 'super_accordion', 'repeater'].includes(fieldType) ? [] : undefined,
+				button_text: fieldType === 'repeater' ? '+ Добавить' : undefined,
+				min: fieldType === 'repeater' ? 1 : undefined,
+				max: fieldType === 'repeater' ? 999 : undefined
 			};
 
 			const fieldConfig = $.extend({}, defaultSettings, settings || {});
@@ -311,10 +318,74 @@
 					break;
 
 				case 'accordion':
+					const accordionId = fieldConfig.name + '_acc';
+					const accordionTitle = fieldConfig.title || fieldConfig.label || 'Аккордеон';
+					html = `${label}
+						<div class="accordion" id="${accordionId}">
+							<div class="accordion-item">
+								<h2 class="accordion-header">
+									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#${accordionId}-collapse">
+										${accordionTitle}
+									</button>
+								</h2>
+								<div id="${accordionId}-collapse" class="accordion-collapse collapse" data-bs-parent="#${accordionId}">
+									<div class="accordion-body">
+										<div class="description">Настройте поля аккордеона в панели настроек</div>
+									</div>
+								</div>
+							</div>
+						</div>`;
+					break;
+
 				case 'fields_block':
+					const blockLabel = fieldConfig.label || 'Блок полей';
+					html = `${label}
+						<div class="wpp-fields-block-preview border rounded p-3">
+							<label class="fw-bold mb-2">${blockLabel}</label>
+							<div class="row">
+								<div class="col-12 text-muted small">
+									<i class="dashicons dashicons-plus"></i> Добавьте поля в настройках блока
+								</div>
+							</div>
+						</div>`;
+					break;
+
 				case 'super_accordion':
+					const superAccId = fieldConfig.name + '_sacc';
+					const superAccTitle = fieldConfig.title || fieldConfig.label || 'Супер Аккордеон';
+					const headerTemplate = fieldConfig.header || '';
+					html = `${label}
+						<div class="wpp-super-accordion" id="${superAccId}" data-header="${headerTemplate}">
+							<div class="wpp-super-accordion-header">
+								<h5 class="row">${superAccTitle}</h5>
+								<span class="toggle-icon">▶</span>
+							</div>
+							<div class="wpp-super-accordion-body row" style="display: none;">
+								<div class="col-12 text-muted small">
+									<i class="dashicons dashicons-plus"></i> Настройте поля в панели настроек
+								</div>
+							</div>
+						</div>`;
+					break;
+
 				case 'repeater':
-					html = `${label}<div class="description">[Сложное поле: ${fieldInfo.label}]</div>`;
+					const repeaterName = fieldConfig.name;
+					const repeaterTitle = fieldConfig.title || fieldConfig.label || 'Повторитель';
+					const buttonText = fieldConfig.button_text || '+ Добавить';
+					html = `${label}
+						<div class="wpp-repeater-container" data-name="${repeaterName}">
+							<div class="wpp-repeater-header d-flex justify-content-between align-items-center mb-3">
+								<h5>${repeaterTitle}</h5>
+								<button type="button" class="btn btn-sm btn-success wpp-repeater-add" disabled>${buttonText}</button>
+							</div>
+							<div class="wpp-repeater-inner">
+								<div class="wpp-repeater-block border mb-3 position-relative p-3">
+									<div class="text-muted small">
+										<i class="dashicons dashicons-plus"></i> Настройте поля повторителя в панели настроек
+									</div>
+								</div>
+							</div>
+						</div>`;
 					break;
 
 				default:
@@ -404,6 +475,65 @@
 				`;
 			}
 
+			// Специфичные настройки для сложных полей
+			let complexFieldsSettingsHTML = '';
+			if (['accordion', 'super_accordion', 'repeater', 'fields_block'].includes(fieldConfig.type)) {
+				const fieldsCount = fieldConfig.fields ? fieldConfig.fields.length : 0;
+				const fieldsListHTML = fieldConfig.fields && fieldConfig.fields.length > 0 
+					? `<div class="wpp-subfields-list">${fieldConfig.fields.map((f, i) => `
+						<div class="wpp-subfield-item" data-index="${i}">
+							<span class="dashicons ${this.getFieldInfo(f.type)?.icon || 'dashicons-admin-generic'}"></span>
+							<span class="subfield-name">${f.label || f.name}</span>
+							<button type="button" class="button edit-subfield" data-index="${i}">
+								<span class="dashicons dashicons-edit"></span>
+							</button>
+							<button type="button" class="button remove-subfield" data-index="${i}">
+								<span class="dashicons dashicons-trash"></span>
+							</button>
+						</div>`).join('')}</div>`
+					: '<div class="wpp-no-subfields"><em>Поля не добавлены</em></div>';
+				
+				complexFieldsSettingsHTML += `
+					<div class="wpp-setting-group wpp-subfields-section">
+						<label>Поля внутри ${fieldInfo.label}</label>
+						${fieldsListHTML}
+						<div class="wpp-subfields-actions" style="margin-top: 10px;">
+							<button type="button" class="button button-primary wpp-add-subfield-btn" data-field-id="${fieldId}">
+								<span class="dashicons dashicons-plus-alt"></span>
+								Добавить поле
+							</button>
+						</div>
+					</div>
+				`;
+			}
+
+			if (fieldConfig.type === 'super_accordion') {
+				complexFieldsSettingsHTML += `
+					<div class="wpp-setting-group">
+						<label for="field-header">Шаблон заголовка (используйте {field_name})</label>
+						<input type="text" id="field-header" value="${fieldConfig.header || ''}" data-setting="header">
+						<span class="description">Пример: {name} - {email}</span>
+					</div>
+				`;
+			}
+
+			if (fieldConfig.type === 'repeater') {
+				complexFieldsSettingsHTML += `
+					<div class="wpp-setting-group">
+						<label for="field-button-text">Текст кнопки добавления</label>
+						<input type="text" id="field-button-text" value="${fieldConfig.button_text || '+ Добавить'}" data-setting="button_text">
+					</div>
+					<div class="wpp-setting-group">
+						<label for="field-min">Минимум блоков</label>
+						<input type="number" id="field-min" value="${fieldConfig.min || 1}" data-setting="min">
+					</div>
+					<div class="wpp-setting-group">
+						<label for="field-max">Максимум блоков</label>
+						<input type="number" id="field-max" value="${fieldConfig.max || 999}" data-setting="max">
+					</div>
+				`;
+			}
+
 			const settingsHTML = `
 				<div class="wpp-field-settings-form" data-field-id="${fieldId}">
 					<div class="wpp-setting-group">
@@ -423,6 +553,8 @@
 						<input type="text" id="field-placeholder" value="${fieldConfig.placeholder || ''}" data-setting="placeholder">
 					</div>
 					` : ''}
+
+					${complexFieldsSettingsHTML}
 
 					<div class="wpp-setting-group">
 						<label for="field-width">${wppFormBuilderData.i18n.fieldWidth}</label>
@@ -474,8 +606,15 @@
 			const self = this;
 			const $settingsForm = $('.wpp-field-settings-form');
 
-			// Изменение текстовых полей
-			$settingsForm.find('input[type="text"], select').on('change', function() {
+			// Изменение текстовых полей и textarea (используем input для мгновенной реакции)
+			$settingsForm.find('input[type="text"], input[type="number"], textarea').on('input change', function() {
+				const setting = $(this).data('setting');
+				const value = $(this).val();
+				self.updateFieldSetting(fieldId, setting, value);
+			});
+
+			// Изменение селектов
+			$settingsForm.find('select').on('change', function() {
 				const setting = $(this).data('setting');
 				const value = $(this).val();
 				self.updateFieldSetting(fieldId, setting, value);
@@ -510,8 +649,8 @@
 				}
 			});
 
-			// Изменение значения опции
-			$settingsForm.on('change', '.wpp-option-item input[type="text"]', function() {
+			// Изменение значения опции (используем input для мгновенной реакции)
+			$settingsForm.on('input change', '.wpp-option-item input[type="text"]', function() {
 				const index = $(this).data('option-index');
 				const value = $(this).val();
 				const fieldConfig = self.getFieldConfig(fieldId);
@@ -547,8 +686,8 @@
 				}
 			});
 
-			// Изменение правил условной логики
-			$settingsForm.on('change', '.rule-field, .rule-operator, .rule-value', function() {
+			// Изменение правил условной логики (используем input для мгновенной реакции)
+			$settingsForm.on('input change', '.rule-field, .rule-operator, .rule-value', function() {
 				const index = $(this).data('rule-index');
 				const fieldConfig = self.getFieldConfig(fieldId);
 				
