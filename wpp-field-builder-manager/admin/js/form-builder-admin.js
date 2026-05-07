@@ -195,9 +195,8 @@
 				options: ['select', 'multiselect', 'radio'].includes(fieldType) ? ['Опция 1', 'Опция 2'] : undefined,
 				conditional_logic: [],
 				// Специфичные настройки для сложных полей
-				title: ['accordion', 'super_accordion', 'repeater'].includes(fieldType) ? fieldInfo.label : undefined,
-				header: fieldType === 'super_accordion' ? '' : undefined,
-				fields: ['accordion', 'fields_block', 'super_accordion', 'repeater'].includes(fieldType) ? [] : undefined,
+				title: ['accordion', 'repeater'].includes(fieldType) ? fieldInfo.label : undefined,
+				fields: ['accordion', 'fields_block', 'repeater'].includes(fieldType) ? [] : undefined,
 				button_text: fieldType === 'repeater' ? '+ Добавить' : undefined,
 				min: fieldType === 'repeater' ? 1 : undefined,
 				max: fieldType === 'repeater' ? 999 : undefined
@@ -350,23 +349,6 @@
 						</div>`;
 					break;
 
-				case 'super_accordion':
-					const superAccId = fieldConfig.name + '_sacc';
-					const superAccTitle = fieldConfig.title || fieldConfig.label || 'Супер Аккордеон';
-					const headerTemplate = fieldConfig.header || '';
-					html = `${label}
-						<div class="wpp-super-accordion" id="${superAccId}" data-header="${headerTemplate}">
-							<div class="wpp-super-accordion-header">
-								<h5 class="row">${superAccTitle}</h5>
-								<span class="toggle-icon">▶</span>
-							</div>
-							<div class="wpp-super-accordion-body row" style="display: none;">
-								<div class="col-12 text-muted small">
-									<i class="dashicons dashicons-plus"></i> Настройте поля в панели настроек
-								</div>
-							</div>
-						</div>`;
-					break;
 
 				case 'repeater':
 					const repeaterName = fieldConfig.name;
@@ -477,7 +459,7 @@
 
 			// Специфичные настройки для сложных полей
 			let complexFieldsSettingsHTML = '';
-			if (['accordion', 'super_accordion', 'repeater', 'fields_block'].includes(fieldConfig.type)) {
+			if (['accordion', 'repeater', 'fields_block'].includes(fieldConfig.type)) {
 				const fieldsCount = fieldConfig.fields ? fieldConfig.fields.length : 0;
 				const fieldsListHTML = fieldConfig.fields && fieldConfig.fields.length > 0 
 					? `<div class="wpp-subfields-list">${fieldConfig.fields.map((f, i) => `
@@ -507,15 +489,6 @@
 				`;
 			}
 
-			if (fieldConfig.type === 'super_accordion') {
-				complexFieldsSettingsHTML += `
-					<div class="wpp-setting-group">
-						<label for="field-header">Шаблон заголовка (используйте {field_name})</label>
-						<input type="text" id="field-header" value="${fieldConfig.header || ''}" data-setting="header">
-						<span class="description">Пример: {name} - {email}</span>
-					</div>
-				`;
-			}
 
 			if (fieldConfig.type === 'repeater') {
 				complexFieldsSettingsHTML += `
@@ -547,7 +520,7 @@
 						<input type="text" id="field-label" value="${fieldConfig.label || ''}" data-setting="label">
 					</div>
 
-					${!['checkbox', 'radio', 'accordion', 'fields_block', 'super_accordion', 'repeater'].includes(fieldConfig.type) ? `
+					${!['checkbox', 'radio', 'accordion', 'fields_block', 'repeater'].includes(fieldConfig.type) ? `
 					<div class="wpp-setting-group">
 						<label for="field-placeholder">${wppFormBuilderData.i18n.fieldPlaceholder}</label>
 						<input type="text" id="field-placeholder" value="${fieldConfig.placeholder || ''}" data-setting="placeholder">
@@ -784,7 +757,7 @@
 		 */
 		getFieldsOptions: function(currentFieldId) {
 			return this.formConfig
-				.filter(f => f.id !== currentFieldId && !['accordion', 'fields_block', 'super_accordion', 'repeater'].includes(f.type))
+				.filter(f => f.id !== currentFieldId && !['accordion', 'fields_block', 'repeater'].includes(f.type))
 				.map(f => `<option value="${f.name}" ${f.name === currentFieldId ? 'selected' : ''}>${f.label || f.name}</option>`)
 				.join('');
 		},

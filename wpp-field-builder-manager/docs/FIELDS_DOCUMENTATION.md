@@ -31,8 +31,7 @@
 
 | Поле | Класс | Описание | Файл |
 |------|-------|----------|------|
-| **Аккордеон** | `WPP_Accordion_Field` | Раскрывающийся блок с контентом | [README](../fields/accordion/README.md) |
-| **Супераккордеон** | `WPP_Super_Accordion_Field` | Аккордеон с полями внутри и динамическим заголовком | [README](../fields/super_accordion/README.md) |
+| **Аккордеон** | `WPP_Accordion_Field` | Раскрывающийся блок с контентом, поддерживает вложенность | [README](../fields/accordion/README.md) |
 | **Повторитель** | `WPP_Repeater_Field` | Динамическое добавление блоков полей | [README](../fields/repeater/README.md) |
 | **Блок полей** | `WPP_Fields_Block_Field` | Группировка нескольких полей | [README](../fields/fields_block/README.md) |
 

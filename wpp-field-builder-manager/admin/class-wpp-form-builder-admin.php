@@ -136,11 +136,6 @@ class WPP_Form_Builder_Admin {
 				'label' => 'Блок полей',
 				'icon'  => 'dashicons-screenoptions',
 			),
-			array(
-				'type'  => 'super_accordion',
-				'label' => 'Супер аккордеон',
-				'icon'  => 'dashicons-editor-expand',
-			),
 		);
 
 		/**

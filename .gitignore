@@ -1,32 +1,56 @@
 ```
-# Dependencies
-node_modules/
-vendor/
-composer.lock
-
-# Logs
+# Logs and temp files
 *.log
-logs/
+*.tmp
+*.swp
 
 # Environment
 .env
 .env.local
 .env.*
 
-# Editor
-.vscode/
-.idea/
-*.swp
-*.swo
-*.tmp
-
-# OS
-.DS_Store
-Thumbs.db
+# Dependencies
+node_modules/
+vendor/
 
 # Build artifacts
 dist/
 build/
 *.min.js
 *.min.css
+*.map
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Cache directories
+.cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# Distribution / packaging
+.Python
+*.egg-info/
+.eggs/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Testing
+.pytest_cache/
+.mypy_cache/
+.tox/
 ```
