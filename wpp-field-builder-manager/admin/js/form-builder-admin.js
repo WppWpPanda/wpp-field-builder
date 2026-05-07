@@ -95,6 +95,9 @@
 					self.updateFieldOrder();
 				}
 			});
+
+			// Инициализация зон сброса внутри контейнеров (аккордеон, repeater, fields_block)
+			self.initDropZones();
 		},
 
 		/**
@@ -150,6 +153,58 @@
 				if (e.key === 'Escape' && $modal.is(':visible')) {
 					$modal.hide();
 				}
+			});
+		},
+
+		/**
+		 * Инициализация зон сброса внутри контейнеров (аккордеон, repeater, fields_block)
+		 */
+		initDropZones: function() {
+			const self = this;
+
+			// Используем делегирование событий для динамических элементов
+			$(document).off('mouseenter.wppDropZone mouseleave.wppDropZone');
+			$(document).on('mouseenter.wppDropZone', '.wpp-drop-zone', function() {
+				$(this).addClass('drag-over');
+			});
+			$(document).on('mouseleave.wppDropZone', '.wpp-drop-zone', function() {
+				$(this).removeClass('drag-over');
+			});
+
+			// Инициализируем droppable для всех зон сброса
+			$('.wpp-drop-zone').each(function() {
+				const $zone = $(this);
+				
+				// Проверяем, не инициализировано ли уже
+				if ($zone.hasClass('ui-droppable')) {
+					return;
+				}
+
+				$zone.droppable({
+					accept: '.wpp-palette-field, .wpp-form-field-item',
+					greedy: true,
+					over: function() {
+						$(this).addClass('drag-over');
+					},
+					out: function() {
+						$(this).removeClass('drag-over');
+					},
+					drop: function(event, ui) {
+						$(this).removeClass('drag-over');
+						
+						if (ui.draggable.hasClass('wpp-palette-field')) {
+							// Добавление нового поля из палитры в зону сброса
+							const fieldType = ui.draggable.data('field-type');
+							const parentFieldId = $(this).data('parent-field-id');
+							self.addFieldToContainer(fieldType, parentFieldId);
+						} else if (ui.draggable.hasClass('wpp-form-field-item')) {
+							// Перемещение существующего поля в зону сброса
+							const fieldId = ui.draggable.data('field-id');
+							const parentFieldId = $(this).data('parent-field-id');
+							self.moveFieldToContainer(fieldId, parentFieldId);
+						}
+					}
+				});
 			});
 		},
 
@@ -319,6 +374,7 @@
 				case 'accordion':
 					const accordionId = fieldConfig.name + '_acc';
 					const accordionTitle = fieldConfig.title || fieldConfig.label || 'Аккордеон';
+					const hasAccordionFields = fieldConfig.fields && fieldConfig.fields.length > 0;
 					html = `${label}
 						<div class="accordion" id="${accordionId}">
 							<div class="accordion-item">
@@ -328,8 +384,8 @@
 									</button>
 								</h2>
 								<div id="${accordionId}-collapse" class="accordion-collapse collapse" data-bs-parent="#${accordionId}">
-									<div class="accordion-body">
-										<div class="description">Настройте поля аккордеона в панели настроек</div>
+									<div class="accordion-body wpp-drop-zone" data-parent-field-id="${fieldConfig.id}">
+										${hasAccordionFields ? '<div class="wpp-subfields-container"></div>' : '<div class="wpp-canvas-placeholder">Перетащите поля сюда или добавьте через панель настроек</div>'}
 									</div>
 								</div>
 							</div>
@@ -338,14 +394,11 @@
 
 				case 'fields_block':
 					const blockLabel = fieldConfig.label || 'Блок полей';
+					const hasBlockFields = fieldConfig.fields && fieldConfig.fields.length > 0;
 					html = `${label}
-						<div class="wpp-fields-block-preview border rounded p-3">
+						<div class="wpp-fields-block-preview border rounded p-3 wpp-drop-zone" data-parent-field-id="${fieldConfig.id}">
 							<label class="fw-bold mb-2">${blockLabel}</label>
-							<div class="row">
-								<div class="col-12 text-muted small">
-									<i class="dashicons dashicons-plus"></i> Добавьте поля в настройках блока
-								</div>
-							</div>
+							${hasBlockFields ? '<div class="wpp-subfields-container row"></div>' : '<div class="row"><div class="col-12 text-muted small"><i class="dashicons dashicons-plus"></i> Перетащите поля сюда или добавьте через панель настроек</div></div>'}
 						</div>`;
 					break;
 
@@ -354,18 +407,15 @@
 					const repeaterName = fieldConfig.name;
 					const repeaterTitle = fieldConfig.title || fieldConfig.label || 'Повторитель';
 					const buttonText = fieldConfig.button_text || '+ Добавить';
+					const hasRepeaterFields = fieldConfig.fields && fieldConfig.fields.length > 0;
 					html = `${label}
 						<div class="wpp-repeater-container" data-name="${repeaterName}">
 							<div class="wpp-repeater-header d-flex justify-content-between align-items-center mb-3">
 								<h5>${repeaterTitle}</h5>
 								<button type="button" class="btn btn-sm btn-success wpp-repeater-add" disabled>${buttonText}</button>
 							</div>
-							<div class="wpp-repeater-inner">
-								<div class="wpp-repeater-block border mb-3 position-relative p-3">
-									<div class="text-muted small">
-										<i class="dashicons dashicons-plus"></i> Настройте поля повторителя в панели настроек
-									</div>
-								</div>
+							<div class="wpp-repeater-inner wpp-drop-zone" data-parent-field-id="${fieldConfig.id}">
+								${hasRepeaterFields ? '<div class="wpp-subfields-container"></div>' : '<div class="wpp-repeater-block border mb-3 position-relative p-3"><div class="text-muted small"><i class="dashicons dashicons-plus"></i> Перетащите поля сюда или добавьте через панель настроек</div></div>'}
 							</div>
 						</div>`;
 					break;
@@ -792,6 +842,202 @@
 		},
 
 		/**
+		 * Добавление поля в контейнер (аккордеон, repeater, fields_block)
+		 * @param {string} fieldType Тип поля
+		 * @param {string} parentFieldId ID родительского поля
+		 */
+		addFieldToContainer: function(fieldType, parentFieldId) {
+			const self = this;
+			const parentField = this.getFieldConfig(parentFieldId);
+			
+			if (!parentField || !['accordion', 'repeater', 'fields_block'].includes(parentField.type)) {
+				console.error('Неверный тип родительского поля');
+				return;
+			}
+
+			const fieldInfo = this.getFieldInfo(fieldType);
+			if (!fieldInfo) {
+				console.error('Неизвестный тип поля:', fieldType);
+				return;
+			}
+
+			const fieldId = 'field_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+			
+			const defaultSettings = {
+				id: fieldId,
+				type: fieldType,
+				name: fieldType + '_' + ((parentField.fields ? parentField.fields.length : 0) + 1),
+				label: fieldInfo.label,
+				placeholder: '',
+				required: false,
+				width: 'full',
+				options: ['select', 'multiselect', 'radio'].includes(fieldType) ? ['Опция 1', 'Опция 2'] : undefined,
+				conditional_logic: [],
+				title: ['accordion', 'repeater'].includes(fieldType) ? fieldInfo.label : undefined,
+				fields: ['accordion', 'fields_block', 'repeater'].includes(fieldType) ? [] : undefined,
+				button_text: fieldType === 'repeater' ? '+ Добавить' : undefined,
+				min: fieldType === 'repeater' ? 1 : undefined,
+				max: fieldType === 'repeater' ? 999 : undefined
+			};
+
+			const fieldConfig = $.extend({}, defaultSettings);
+			
+			// Инициализируем массив полей если нужно
+			if (!parentField.fields) {
+				parentField.fields = [];
+			}
+			
+			parentField.fields.push(fieldConfig);
+			this.saveConfig();
+			
+			// Рендерим поле внутри контейнера
+			this.renderSubField(fieldConfig, parentFieldId);
+			this.selectField(fieldId);
+		},
+
+		/**
+		 * Перемещение поля в контейнер
+		 * @param {string} fieldId ID перемещаемого поля
+		 * @param {string} parentFieldId ID родительского поля
+		 */
+		moveFieldToContainer: function(fieldId, parentFieldId) {
+			const self = this;
+			const parentField = this.getFieldConfig(parentFieldId);
+			
+			if (!parentField || !['accordion', 'repeater', 'fields_block'].includes(parentField.type)) {
+				console.error('Неверный тип родительского поля');
+				return;
+			}
+
+			// Находим поле в основной конфигурации
+			const fieldIndex = this.formConfig.findIndex(f => f.id === fieldId);
+			if (fieldIndex === -1) {
+				console.error('Поле не найдено');
+				return;
+			}
+
+			const fieldConfig = this.formConfig[fieldIndex];
+			
+			// Удаляем из основного массива
+			this.formConfig.splice(fieldIndex, 1);
+			
+			// Инициализируем массив полей если нужно
+			if (!parentField.fields) {
+				parentField.fields = [];
+			}
+			
+			parentField.fields.push(fieldConfig);
+			this.saveConfig();
+			
+			// Удаляем из DOM и рендерим внутри контейнера
+			$(`.wpp-form-field-item[data-field-id="${fieldId}"]`).remove();
+			this.renderSubField(fieldConfig, parentFieldId);
+		},
+
+		/**
+		 * Отрисовка подполя внутри контейнера
+		 * @param {object} fieldConfig Конфигурация поля
+		 * @param {string} parentFieldId ID родительского поля
+		 */
+		renderSubField: function(fieldConfig, parentFieldId) {
+			const fieldInfo = this.getFieldInfo(fieldConfig.type);
+			const $parentZone = $(`.wpp-drop-zone[data-parent-field-id="${parentFieldId}"]`);
+			
+			// Находим или создаем контейнер для подполей
+			let $subFieldsContainer = $parentZone.find('.wpp-subfields-container');
+			if ($subFieldsContainer.length === 0) {
+				$subFieldsContainer = $('<div class="wpp-subfields-container"></div>');
+				$parentZone.empty().append($subFieldsContainer);
+			}
+
+			// Скрываем placeholder если он есть
+			$parentZone.find('.wpp-canvas-placeholder, .wpp-repeater-block').hide();
+
+			const $fieldItem = $(`
+				<div class="wpp-form-field-item wpp-subfield-item" data-field-id="${fieldConfig.id}" data-field-type="${fieldConfig.type}" data-parent-id="${parentFieldId}">
+					<div class="wpp-field-header">
+						<div class="wpp-field-type-badge">
+							<span class="dashicons ${fieldInfo.icon}"></span>
+							<span>${fieldInfo.label}</span>
+						</div>
+						<div class="wpp-field-actions">
+							<button type="button" class="button edit-field" title="Редактировать">
+								<span class="dashicons dashicons-edit"></span>
+							</button>
+							<button type="button" class="button remove-field" title="Удалить">
+								<span class="dashicons dashicons-trash"></span>
+							</button>
+						</div>
+					</div>
+					<div class="wpp-field-preview">
+						${this.getFieldPreviewHTML(fieldConfig)}
+					</div>
+				</div>
+			`);
+
+			// Обработчики событий
+			$fieldItem.on('click', () => {
+				this.selectField(fieldConfig.id);
+			});
+
+			$fieldItem.find('.edit-field').on('click', (e) => {
+				e.stopPropagation();
+				this.selectField(fieldConfig.id);
+				this.scrollToSettings();
+			});
+
+			$fieldItem.find('.remove-field').on('click', (e) => {
+				e.stopPropagation();
+				this.removeSubField(fieldConfig.id, parentFieldId);
+			});
+
+			$subFieldsContainer.append($fieldItem);
+			
+			// Переинициализируем зоны сброса для новых вложенных элементов
+			this.initDropZones();
+		},
+
+		/**
+		 * Удаление подполя из контейнера
+		 * @param {string} fieldId ID поля
+		 * @param {string} parentFieldId ID родительского поля
+		 */
+		removeSubField: function(fieldId, parentFieldId) {
+			if (!confirm(wppFormBuilderData.i18n.confirmDelete)) {
+				return;
+			}
+
+			const parentField = this.getFieldConfig(parentFieldId);
+			if (!parentField || !parentField.fields) {
+				return;
+			}
+
+			const index = parentField.fields.findIndex(f => f.id === fieldId);
+			if (index !== -1) {
+				parentField.fields.splice(index, 1);
+				this.saveConfig();
+				
+				$(`.wpp-subfield-item[data-field-id="${fieldId}"]`).remove();
+				
+				// Если подполей не осталось, показываем placeholder
+				if (parentField.fields.length === 0) {
+					const $parentZone = $(`.wpp-drop-zone[data-parent-field-id="${parentFieldId}"]`);
+					$parentZone.find('.wpp-subfields-container').remove();
+					$parentZone.find('.wpp-canvas-placeholder, .wpp-repeater-block').show();
+				}
+				
+				if (this.selectedFieldId === fieldId) {
+					this.selectedFieldId = null;
+					$('#wpp-settings-panel').html(`
+						<div class="wpp-no-selection">
+							<p>${wppFormBuilderData.i18n.fieldSettings}</p>
+						</div>
+					`);
+				}
+			}
+		},
+
+		/**
 		 * Обновление порядка полей после drag-and-drop
 		 */
 		updateFieldOrder: function() {
@@ -812,6 +1058,7 @@
 		 * Отрисовка формы из сохранённой конфигурации
 		 */
 		renderFormFromConfig: function() {
+			const self = this;
 			const $canvas = $('#wpp-form-canvas');
 			$canvas.empty();
 
@@ -826,8 +1073,43 @@
 			}
 
 			this.formConfig.forEach(fieldConfig => {
-				this.renderField(fieldConfig);
+				self.renderFieldWithSubFields(fieldConfig);
 			});
+			
+			// Переинициализируем зоны сброса после отрисовки
+			setTimeout(function() {
+				self.initDropZones();
+			}, 100);
+		},
+
+		/**
+		 * Отрисовка поля с подполями (для аккордеонов, repeater, fields_block)
+		 * @param {object} fieldConfig Конфигурация поля
+		 */
+		renderFieldWithSubFields: function(fieldConfig) {
+			this.renderField(fieldConfig);
+			
+			// Если у поля есть подполя, рендерим их
+			if (fieldConfig.fields && fieldConfig.fields.length > 0) {
+				const $parentZone = $(`.wpp-drop-zone[data-parent-field-id="${fieldConfig.id}"]`);
+				
+				if ($parentZone.length > 0) {
+					// Создаем контейнер для подполей
+					let $subFieldsContainer = $parentZone.find('.wpp-subfields-container');
+					if ($subFieldsContainer.length === 0) {
+						$subFieldsContainer = $('<div class="wpp-subfields-container"></div>');
+						$parentZone.empty().append($subFieldsContainer);
+					}
+					
+					// Скрываем placeholder
+					$parentZone.find('.wpp-canvas-placeholder, .wpp-repeater-block').hide();
+					
+					// Рендерим каждое подполе
+					fieldConfig.fields.forEach(subFieldConfig => {
+						this.renderSubField(subFieldConfig, fieldConfig.id);
+					});
+				}
+			}
 		},
 
 		/**
